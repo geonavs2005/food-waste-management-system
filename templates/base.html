@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Food Waste Management System (DSA Project){% endblock %}</title>
+    <!-- Modern Font and Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="brand-icon"><i class="fa-solid fa-seedling"></i></div>
+            <div>
+                <div class="brand-title">FoodRescue DSA</div>
+                <div class="brand-subtitle">MCA Academic Project</div>
+            </div>
+        </div>
+
+        <ul class="sidebar-nav">
+            {% if session.get('role') == 'admin' %}
+            <li class="nav-category">Admin Operations</li>
+            <li class="nav-item">
+                <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('food_bp.food_page') }}" class="nav-link {% if request.path == '/food' %}active{% endif %}">
+                    <i class="fa-solid fa-bowl-food"></i>
+                    <span class="nav-text">Food Inventory (LL)</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('request_bp.requests_page') }}" class="nav-link {% if request.path == '/requests' %}active{% endif %}">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span class="nav-text">Requests (Queue)</span>
+                </a>
+            </li>
+
+            <li class="nav-category">Entities</li>
+            <li class="nav-item">
+                <a href="{{ url_for('donor_bp.donors_page') }}" class="nav-link {% if request.path == '/donors' %}active{% endif %}">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span class="nav-text">Donors</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('recipient_bp.recipients_page') }}" class="nav-link {% if request.path == '/recipients' %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i>
+                    <span class="nav-text">Recipients</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('location_bp.locations_page') }}" class="nav-link {% if request.path == '/locations' %}active{% endif %}">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <span class="nav-text">Location Graph</span>
+                </a>
+            </li>
+
+            <li class="nav-category">DSA Modules</li>
+            <li class="nav-item">
+                <a href="{{ url_for('algorithm_bp.algorithms_page') }}" class="nav-link {% if request.path == '/algorithms' %}active{% endif %}">
+                    <i class="fa-solid fa-brain"></i>
+                    <span class="nav-text">Algorithms (Greedy/DP)</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('algorithm_bp.dsa_visualizer_page') }}" class="nav-link {% if request.path == '/dsa-visualizer' %}active{% endif %}">
+                    <i class="fa-solid fa-cubes-stacked"></i>
+                    <span class="nav-text">DSA Visualizer (11-in-1)</span>
+                </a>
+            </li>
+            {% elif session.get('role') == 'donor' %}
+            <!-- Donor Navigation Links -->
+            <li class="nav-category">Donor Portal</li>
+            <li class="nav-item">
+                <a href="{{ url_for('auth_bp.donor_portal') }}" class="nav-link {% if request.path == '/donor/portal' %}active{% endif %}">
+                    <i class="fa-solid fa-house-user"></i>
+                    <span class="nav-text">My Donations</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('food_bp.food_page') }}" class="nav-link {% if request.path == '/food' %}active{% endif %}">
+                    <i class="fa-solid fa-bowl-food"></i>
+                    <span class="nav-text">Food Inventory (LL)</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('location_bp.locations_page') }}" class="nav-link {% if request.path == '/locations' %}active{% endif %}">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <span class="nav-text">Location Network</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('algorithm_bp.dsa_visualizer_page') }}" class="nav-link {% if request.path == '/dsa-visualizer' %}active{% endif %}">
+                    <i class="fa-solid fa-cubes-stacked"></i>
+                    <span class="nav-text">DSA Visualizer</span>
+                </a>
+            </li>
+            {% else %}
+            <!-- Receiver Navigation Links -->
+            <li class="nav-category">Receiver Portal</li>
+            <li class="nav-item">
+                <a href="{{ url_for('auth_bp.receiver_portal') }}" class="nav-link {% if request.path == '/receiver/portal' %}active{% endif %}">
+                    <i class="fa-solid fa-hand-holding-hand"></i>
+                    <span class="nav-text">My Food Requests</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('request_bp.requests_page') }}" class="nav-link {% if request.path == '/requests' %}active{% endif %}">
+                    <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                    <span class="nav-text">FIFO Queue Train</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('food_bp.food_page') }}" class="nav-link {% if request.path == '/food' %}active{% endif %}">
+                    <i class="fa-solid fa-bowl-food"></i>
+                    <span class="nav-text">Surplus Inventory</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('location_bp.locations_page') }}" class="nav-link {% if request.path == '/locations' %}active{% endif %}">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <span class="nav-text">Distribution Hubs</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('algorithm_bp.dsa_visualizer_page') }}" class="nav-link {% if request.path == '/dsa-visualizer' %}active{% endif %}">
+                    <i class="fa-solid fa-cubes-stacked"></i>
+                    <span class="nav-text">DSA Visualizer</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <div class="sidebar-footer">
+            <div style="color: #cbd5e1; font-weight:600;">
+                {% if session.get('username') %}
+                    {{ session.get('name') }}
+                {% else %}
+                    Guest User
+                {% endif %}
+            </div>
+            <span class="dsa-badge-pill">
+                {% if session.get('role') == 'admin' %}
+                    ADMIN ROLE
+                {% elif session.get('role') == 'donor' %}
+                    DONOR USER
+                {% elif session.get('role') == 'receiver' %}
+                    RECEIVER USER
+                {% else %}
+                    GUEST
+                {% endif %}
+            </span>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="page-title">
+                <h1>{% block header_title %}Dashboard{% endblock %}</h1>
+                <p>{% block header_subtitle %}Surplus Food Redistribution & Data Structures Management{% endblock %}</p>
+            </div>
+            <div class="topbar-actions">
+                {% if session.get('role') == 'admin' %}
+                <button class="btn btn-outline btn-sm" onclick="triggerStackUndo()" title="Pop top operation from LIFO Stack">
+                    <i class="fa-solid fa-rotate-left"></i> Stack Undo (LIFO)
+                </button>
+                <a href="{{ url_for('algorithm_bp.dsa_visualizer_page') }}" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-play"></i> Live DSA Demo
+                </a>
+                {% endif %}
+                
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('auth_bp.logout') }}" class="btn btn-danger btn-sm" title="Log out from session">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth_bp.login_page') }}" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+                </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Body Content -->
+        <main class="content-body">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Toast Component -->
+    <div id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

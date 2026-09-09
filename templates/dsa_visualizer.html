@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block header_title %}11-in-1 DSA Visualizer & Viva Laboratory{% endblock %}
+{% block header_subtitle %}Interactive demonstrations of all 14 Data Structures & Algorithms required for MCA examination{% endblock %}
+
+{% block content %}
+
+<div class="tabs-container">
+    <!-- Visualizer Tabs Bar -->
+    <div class="tabs-nav" style="flex-wrap: wrap;">
+        <button class="tab-btn active" data-tab="vis-ll"><i class="fa-solid fa-link"></i> 1. Linked List</button>
+        <button class="tab-btn" data-tab="vis-stack"><i class="fa-solid fa-layer-group"></i> 2. Stack (LIFO)</button>
+        <button class="tab-btn" data-tab="vis-queue"><i class="fa-solid fa-arrows-split-up-and-left"></i> 3. Queue (FIFO)</button>
+        <button class="tab-btn" data-tab="vis-bst"><i class="fa-solid fa-tree"></i> 4. BST (Search Tree)</button>
+        <button class="tab-btn" data-tab="vis-btree"><i class="fa-solid fa-network-wired"></i> 5. Binary Tree</button>
+        <button class="tab-btn" data-tab="vis-graph"><i class="fa-solid fa-circle-nodes"></i> 6. Graph (BFS/DFS)</button>
+        <button class="tab-btn" data-tab="vis-search"><i class="fa-solid fa-magnifying-glass"></i> 7. Searching</button>
+        <button class="tab-btn" data-tab="vis-sort"><i class="fa-solid fa-arrow-down-short-wide"></i> 8. Sorting</button>
+        <button class="tab-btn" data-tab="vis-greedy"><i class="fa-solid fa-bolt"></i> 9. Greedy</button>
+        <button class="tab-btn" data-tab="vis-dp"><i class="fa-solid fa-table-cells"></i> 10. Dynamic Prog</button>
+        <button class="tab-btn" data-tab="vis-bt"><i class="fa-solid fa-code-fork"></i> 11. Backtracking</button>
+    </div>
+
+    <!-- 1. LINKED LIST -->
+    <div class="tab-pane active" id="vis-ll">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title">1. Singly Linked List</div>
+                <span class="complexity-pill">Insert: O(1) | Traverse: O(n) | Search: O(n)</span>
+            </div>
+            <div class="dsa-info-body">
+                Food records chained together dynamically via <code>next</code> pointers without pre-allocated fixed memory.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><div class="card-title">Live FoodNode Memory Chain</div></div>
+            <div class="card-body">
+                <div class="ll-container" id="dsaLLContainer">
+                    <div style="font-weight: 800; color: #475569; padding: 10px;">HEAD →</div>
+                    {% for f in foods[:6] %}
+                    <div class="ll-node">
+                        <div class="ll-node-id">FoodNode #{{ f.food_id }}</div>
+                        <div class="ll-node-name">{{ f.food_name }}</div>
+                        <div class="ll-node-qty">{{ f.quantity }} pkts</div>
+                    </div>
+                    <div class="ll-arrow">➔</div>
+                    {% endfor %}
+                    <div class="ll-null">NULL</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. STACK -->
+    <div class="tab-pane" id="vis-stack">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title">2. Stack (LIFO: Last-In, First-Out)</div>
+                <span class="complexity-pill">Push: O(1) | Pop: O(1) | Peek: O(1)</span>
+            </div>
+            <div class="dsa-info-body">
+                Maintains admin operation log. The newest activity sits at TOP and is the first popped during Undo.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Stack Memory Visualizer</div>
+                <button class="btn btn-outline btn-sm" onclick="triggerStackUndo()"><i class="fa-solid fa-rotate-left"></i> Pop Top (Undo)</button>
+            </div>
+            <div class="card-body">
+                <div class="stack-box-container">
+                    {% for op in stack_items %}
+                    <div class="stack-item {% if loop.first %}top-item{% endif %}">
+                        <div>
+                            <strong>{{ op.action_type }}</strong>
+                            <div style="font-size:0.8rem; color:#64748b;">{{ op.details }}</div>
+                        </div>
+                        <div>{% if loop.first %}<span class="stack-badge-top">TOP OF STACK</span>{% endif %}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. QUEUE -->
+    <div class="tab-pane" id="vis-queue">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title">3. Queue (FIFO: First-In, First-Out)</div>
+                <span class="complexity-pill">Enqueue: O(1) | Dequeue: O(1) | Peek: O(1)</span>
+            </div>
+            <div class="dsa-info-body">
+                Ensures fair distribution by serving requests strictly in arrival order (Front to Rear).
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">FIFO Request Queue</div>
+                <button class="btn btn-primary btn-sm" onclick="processNextQueueRequest()"><i class="fa-solid fa-forward-step"></i> Dequeue Front</button>
+            </div>
+            <div class="card-body">
+                <div class="queue-train">
+                    <div style="font-weight: 800; color: #059669; padding: 10px;">FRONT ➔</div>
+                    {% for req in requests[:5] %}
+                    <div class="queue-card {% if loop.first %}front-item{% endif %}">
+                        <div style="font-size:0.75rem; color:#64748b;">Req #{{ req.request_id }}</div>
+                        <div style="font-weight: bold;">{{ req.recipient_name }}</div>
+                        <div style="font-size:0.82rem; color:#0284c7;">{{ req.quantity_requested }} pkts</div>
+                    </div>
+                    <div style="color:#94a3b8;">←</div>
+                    {% endfor %}
+                    <div style="font-weight: 800; color: #64748b; padding: 10px;">➔ REAR</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. BST -->
+    <div class="tab-pane" id="vis-bst">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title">4. Binary Search Tree (BST)</div>
+                <span class="complexity-pill">Search: O(log n) Avg, O(n) Worst | Inorder: O(n) [Sorted]</span>
+            </div>
+            <div class="dsa-info-body">
+                Binary tree maintaining key ordering: <code>Left &lt; Root &lt; Right</code>. Inorder traversal produces naturally sorted order.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Interactive BST Canvas Visualizer</div>
+                <button class="btn btn-outline btn-sm" onclick="resetBST()"><i class="fa-solid fa-arrow-rotate-right"></i> Reset Tree</button>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+                    <input type="number" id="bstValInput" class="form-control" style="width: 140px;" placeholder="Value (e.g. 75)">
+                    <button class="btn btn-primary btn-sm" onclick="insertBSTNode()"><i class="fa-solid fa-plus"></i> Insert</button>
+                    <button class="btn btn-secondary btn-sm" onclick="searchBSTNode()"><i class="fa-solid fa-search"></i> Search</button>
+                    <button class="btn btn-outline btn-sm" onclick="runBSTTraversals()"><i class="fa-solid fa-code-branch"></i> In/Pre/Post Traversals</button>
+                </div>
+                <div id="bstTraversalOutput" style="margin-bottom: 14px; font-size: 0.88rem; display: none; background: #f8fafc; padding: 10px; border-radius: 6px;"></div>
+                <div class="canvas-wrapper">
+                    <canvas id="bstCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. BINARY TREE -->
+    <div class="tab-pane" id="vis-btree">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title">5. Binary Tree</div>
+                <span class="complexity-pill">Traversals: O(n) | Height: O(n)</span>
+            </div>
+            <div class="dsa-info-body">
+                Hierarchical tree structure where each node has at most two children. Inserted in level order.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><div class="card-title">Binary Tree Level-Order View</div></div>
+            <div class="card-body">
+                <div class="canvas-wrapper">
+                    <canvas id="btreeCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. GRAPH -->
+    <div class="tab-pane" id="vis-graph">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title">6. Graph & BFS / DFS</div>
+                <span class="complexity-pill">BFS: O(V + E) | DFS: O(V + E)</span>
+            </div>
+            <div class="dsa-info-body">
+                Location network graph connecting food hubs and distribution centers with live traversal path animations.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><div class="card-title">Graph Traversal Network</div></div>
+            <div class="card-body">
+                <p>Use the <strong><a href="{{ url_for('location_bp.locations_page') }}">Location Graph</a></strong> page for full interactive step-by-step route planning.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. SEARCHING -->
+    <div class="tab-pane" id="vis-search">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title">7. Linear Search vs Binary Search</div>
+                <span class="complexity-pill">Linear: O(n) | Binary: O(log n)</span>
+            </div>
+            <div class="dsa-info-body">
+                Linear search inspects every element. Binary search requires pre-sorting and cuts search space by 50% on every step.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><div class="card-title">Search Complexity Demonstration</div></div>
+            <div class="card-body">
+                <p>Try searching food items in the <strong><a href="{{ url_for('food_bp.food_page') }}">Food Inventory</a></strong> page to compare exact comparison counts.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. SORTING -->
+    <div class="tab-pane" id="vis-sort">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title">8. Merge Sort vs Quick Sort vs Bubble Sort</div>
+                <span class="complexity-pill">Merge Sort: O(n log n) Guaranteed | Bubble: O(n^2)</span>
+            </div>
+            <div class="dsa-info-body">
+                Custom pure Python sorting implementations sorting records by quantity or expiry date without built-in sort.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><div class="card-title">Sorting Complexity Comparison</div></div>
+            <div class="card-body">
+                <table class="table">
+                    <thead><tr><th>Algorithm</th><th>Best Time</th><th>Average Time</th><th>Worst Time</th><th>Space</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Merge Sort</strong></td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td></tr>
+                        <tr><td><strong>Quick Sort</strong></td><td>O(n log n)</td><td>O(n log n)</td><td>O(n^2)</td><td>O(log n)</td></tr>
+                        <tr><td><strong>Bubble Sort</strong></td><td>O(n)</td><td>O(n^2)</td><td>O(n^2)</td><td>O(1)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. GREEDY -->
+    <div class="tab-pane" id="vis-greedy">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header"><div class="dsa-info-title">9. Greedy Heuristic Allocation</div></div>
+            <div class="dsa-info-body">Immediate local choice: serves highest priority requests first until food runs out.</div>
+        </div>
+        <p><a href="{{ url_for('algorithm_bp.algorithms_page') }}" class="btn btn-primary btn-sm">Launch Greedy Simulator</a></p>
+    </div>
+
+    <!-- 10. DP -->
+    <div class="tab-pane" id="vis-dp">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header"><div class="dsa-info-title">10. Dynamic Programming 0/1 Knapsack</div></div>
+            <div class="dsa-info-body">Mathematical global optimum maximizing total priority benefit within food budget limit.</div>
+        </div>
+        <p><a href="{{ url_for('algorithm_bp.algorithms_page') }}" class="btn btn-secondary btn-sm">Launch DP Matrix Optimizer</a></p>
+    </div>
+
+    <!-- 11. BACKTRACKING -->
+    <div class="tab-pane" id="vis-bt">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header"><div class="dsa-info-title">11. Backtracking State Search</div></div>
+            <div class="dsa-info-body">Explores donor-center assignments and rolls back (backtracks) invalid states.</div>
+        </div>
+        <p><a href="{{ url_for('algorithm_bp.algorithms_page') }}" class="btn btn-outline btn-sm">Launch Backtracking Solver</a></p>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let bstRenderer, btreeRenderer;
+
+window.addEventListener('load', async () => {
+    bstRenderer = new TreeCanvasRenderer('bstCanvas');
+    btreeRenderer = new TreeCanvasRenderer('btreeCanvas');
+    
+    // Load initial BST
+    const res = await fetch('/api/bst/traverse');
+    const data = await res.json();
+    if (data.tree) {
+        bstRenderer.drawTree(data.tree);
+    }
+    
+    // Draw sample BTree
+    const sampleBtree = {
+        val: 50,
+        left: { val: 30, left: { val: 20 }, right: { val: 40 } },
+        right: { val: 70, left: { val: 60 }, right: { val: 80 } }
+    };
+    btreeRenderer.drawTree(sampleBtree);
+});
+
+async function insertBSTNode() {
+    const val = document.getElementById('bstValInput').value;
+    if (!val) return showToast('Please enter an integer value', 'error');
+    
+    const res = await fetch('/api/bst/insert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: val })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        bstRenderer.drawTree(data.tree, val);
+        showToast(`Inserted key ${val} into BST!`);
+        document.getElementById('bstValInput').value = '';
+    } else {
+        showToast(data.message, 'error');
+    }
+}
+
+async function searchBSTNode() {
+    const val = document.getElementById('bstValInput').value;
+    if (!val) return showToast('Please enter an integer value to search', 'error');
+
+    const res = await fetch('/api/bst/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: val })
+    });
+    const data = await res.json();
+    if (data.found) {
+        showToast(`Key ${val} FOUND in BST in ${data.comparisons} comparison(s)! Path: ${data.path.join(' ➔ ')}`);
+        bstRenderer.drawTree(bstRenderer.treeRoot || null, val);
+    } else {
+        showToast(`Key ${val} NOT FOUND after ${data.comparisons} comparisons.`, 'error');
+    }
+}
+
+async function runBSTTraversals() {
+    const res = await fetch('/api/bst/traverse');
+    const data = await res.json();
+    const box = document.getElementById('bstTraversalOutput');
+    box.style.display = 'block';
+    box.innerHTML = `
+        <div><strong>Inorder (Left, Root, Right - SORTED):</strong> ${data.inorder.map(x => x.key).join(' ➔ ')}</div>
+        <div style="margin-top:4px;"><strong>Preorder (Root, Left, Right):</strong> ${data.preorder.map(x => x.key).join(' ➔ ')}</div>
+        <div style="margin-top:4px;"><strong>Postorder (Left, Right, Root):</strong> ${data.postorder.map(x => x.key).join(' ➔ ')}</div>
+    `;
+    bstRenderer.drawTree(data.tree);
+}
+
+async function resetBST() {
+    const res = await fetch('/api/bst/reset', { method: 'POST' });
+    const data = await res.json();
+    bstRenderer.drawTree(data.tree);
+    showToast('BST reset to default balanced demonstration tree.');
+}
+</script>
+{% endblock %}

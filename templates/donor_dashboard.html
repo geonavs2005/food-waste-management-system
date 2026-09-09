@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block header_title %}Donor Self-Service Portal{% endblock %}
+{% block header_subtitle %}Manage your food donations, contribute surplus food, and view recipient needs{% endblock %}
+
+{% block content %}
+
+<!-- Donor Welcome Banner -->
+<div class="card" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: #ffffff; border: none;">
+    <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="font-size: 1.4rem; font-weight: 700;">Welcome, {{ session.get('name', 'Food Donor') }}!</h2>
+            <p style="opacity: 0.9; font-size: 0.88rem; margin-top: 4px;">
+                Organization: <strong>{{ donor.organization if donor else 'Registered Contributor' }}</strong> | Hub: <strong>{{ donor.location if donor else 'City Hub' }}</strong>
+            </p>
+        </div>
+        <button class="btn btn-secondary" onclick="openModal('addDonorFoodModal')">
+            <i class="fa-solid fa-plus"></i> Donate Surplus Food
+        </button>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-emerald"><i class="fa-solid fa-bowl-food"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ my_foods | length }}</div>
+            <div class="stat-label">My Donated Batches</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-blue"><i class="fa-solid fa-box-archive"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ total_donated }}</div>
+            <div class="stat-label">Total Packets Contributed</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-rose"><i class="fa-solid fa-heart-pulse"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ active_requests | length }}</div>
+            <div class="stat-label">Active Shelter Requests</div>
+        </div>
+    </div>
+</div>
+
+<!-- My Food Donations Table -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-list-check"></i> My Active Food Donations (Linked List Records)</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('addDonorFoodModal')">
+            <i class="fa-solid fa-plus"></i> Add New Donation
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Batch ID</th>
+                        <th>Food Name</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Expiry Date</th>
+                        <th>Location Hub</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if my_foods %}
+                        {% for f in my_foods %}
+                        <tr>
+                            <td><strong>#{{ f.food_id }}</strong></td>
+                            <td><strong>{{ f.food_name }}</strong></td>
+                            <td><span class="badge badge-info">{{ f.category }}</span></td>
+                            <td>{{ f.quantity }} packets</td>
+                            <td><span class="badge badge-secondary">{{ f.expiry_date }}</span></td>
+                            <td>{{ f.location }}</td>
+                            <td><span class="badge badge-success">{{ f.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #94a3b8; padding: 24px;">
+                                You have not registered any surplus food batches yet. Click "Donate Surplus Food" above!
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Active Recipient Needs -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-hand-holding-hand" style="color: var(--danger);"></i> Urgent Recipient Needs Waiting for Food</div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Req ID</th>
+                        <th>Recipient Shelter</th>
+                        <th>Food Category Needed</th>
+                        <th>Quantity Needed</th>
+                        <th>Urgency Rating</th>
+                        <th>Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if active_requests %}
+                        {% for req in active_requests %}
+                        <tr>
+                            <td>#{{ req.request_id }}</td>
+                            <td><strong>{{ req.recipient_name }}</strong></td>
+                            <td><span class="badge badge-info">{{ req.food_category }}</span></td>
+                            <td><strong>{{ req.quantity_requested }} packets</strong></td>
+                            <td>
+                                <span class="badge {% if req.priority >= 9 %}badge-danger{% elif req.priority >= 7 %}badge-warning{% else %}badge-secondary{% endif %}">
+                                    Level {{ req.priority }}/10
+                                </span>
+                            </td>
+                            <td>{{ req.recipient_location }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8;">No pending recipient requests at this moment.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Food from Donor Portal -->
+<div class="modal-overlay" id="addDonorFoodModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Donate Surplus Food Batch</h3>
+            <button class="modal-close" onclick="closeModal('addDonorFoodModal')">&times;</button>
+        </div>
+        <form id="addDonorFoodForm">
+            <input type="hidden" name="donor_id" value="{{ session.get('donor_id', 1) }}">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Food Item Name *</label>
+                    <input type="text" name="food_name" class="form-control" placeholder="e.g. Fresh Vegetable Biryani, Bread Loaves" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Category *</label>
+                        <select name="category" class="form-control" required>
+                            <option value="Meals">Meals</option>
+                            <option value="Bread">Bread & Bakery</option>
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Fruits">Fruits & Produce</option>
+                            <option value="Snacks">Snacks</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantity (Packets) *</label>
+                        <input type="number" name="quantity" class="form-control" min="1" placeholder="e.g. 40" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Expiry Date *</label>
+                        <input type="date" name="expiry_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pickup Location *</label>
+                        <input type="text" name="location" class="form-control" value="{{ donor.location if donor else 'Central Kitchen Hub' }}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('addDonorFoodModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-hand-holding-heart"></i> Submit Donation</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const fForm = document.getElementById('addDonorFoodForm');
+    if (fForm) {
+        fForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = Object.fromEntries(new FormData(fForm).entries());
+            const res = await fetch('/api/food', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                showToast(result.message);
+                closeModal('addDonorFoodModal');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                showToast(result.message, 'error');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

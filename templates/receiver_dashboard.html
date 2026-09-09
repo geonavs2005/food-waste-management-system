@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block header_title %}Receiver / Shelter Portal{% endblock %}
+{% block header_subtitle %}Request surplus food for your shelter, track queue status, and explore available inventory{% endblock %}
+
+{% block content %}
+
+<!-- Receiver Welcome Banner -->
+<div class="card" style="background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%); color: #ffffff; border: none;">
+    <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="font-size: 1.4rem; font-weight: 700;">Welcome, {{ session.get('name', 'Shelter Beneficiary') }}!</h2>
+            <p style="opacity: 0.9; font-size: 0.88rem; margin-top: 4px;">
+                Organization: <strong>{{ recipient.organization if recipient else 'Registered Shelter / Orphanage' }}</strong> | Hub: <strong>{{ recipient.location if recipient else 'City Hub' }}</strong>
+            </p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <span class="badge" style="background: #f59e0b; color: #78350f; font-size: 0.85rem; padding: 6px 12px;">
+                Urgency Priority: Level {{ recipient.priority if recipient else 8 }}/10
+            </span>
+            <button class="btn btn-primary" onclick="openModal('addReceiverRequestModal')">
+                <i class="fa-solid fa-cart-plus"></i> Request Food (FIFO Queue)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-blue"><i class="fa-solid fa-clipboard-list"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ my_requests | length }}</div>
+            <div class="stat-label">Total Requests Placed</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-rose"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ pending_count }}</div>
+            <div class="stat-label">Waiting in FIFO Queue</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-emerald"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ fulfilled_count }}</div>
+            <div class="stat-label">Fulfilled & Distributed</div>
+        </div>
+    </div>
+</div>
+
+<!-- My Submitted Requests Table -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-arrows-split-up-and-left" style="color: var(--secondary);"></i> My Food Requests Status (FIFO Processing)
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="openModal('addReceiverRequestModal')">
+            <i class="fa-solid fa-plus"></i> Submit New Request
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Food Category</th>
+                        <th>Quantity Needed</th>
+                        <th>Urgency Rating</th>
+                        <th>Request Date</th>
+                        <th>Queue Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if my_requests %}
+                        {% for req in my_requests %}
+                        <tr>
+                            <td><strong>#{{ req.request_id }}</strong></td>
+                            <td><span class="badge badge-info">{{ req.food_category }}</span></td>
+                            <td><strong>{{ req.quantity_requested }} packets</strong></td>
+                            <td>
+                                <span class="badge {% if req.priority >= 9 %}badge-danger{% elif req.priority >= 7 %}badge-warning{% else %}badge-secondary{% endif %}">
+                                    Priority {{ req.priority }}/10
+                                </span>
+                            </td>
+                            <td><small class="text-muted">{{ req.request_date }}</small></td>
+                            <td>
+                                <span class="badge {% if req.status == 'Pending' %}badge-warning{% elif req.status == 'Processed' %}badge-success{% else %}badge-secondary{% endif %}">
+                                    {{ req.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px;">
+                                You have no active requests. Click "Request Food" to enqueue your demand.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Available Surplus Food Inventory in System -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-bowl-rice" style="color: var(--primary);"></i> Available Surplus Food in Network (Linked List Inventory)</div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Batch #</th>
+                        <th>Food Item</th>
+                        <th>Category</th>
+                        <th>Available Quantity</th>
+                        <th>Expiry Date</th>
+                        <th>Pickup Hub</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if available_foods %}
+                        {% for f in available_foods %}
+                        <tr>
+                            <td>#{{ f.food_id }}</td>
+                            <td><strong>{{ f.food_name }}</strong></td>
+                            <td><span class="badge badge-info">{{ f.category }}</span></td>
+                            <td><strong>{{ f.quantity }} pkts</strong></td>
+                            <td><span class="badge badge-secondary">{{ f.expiry_date }}</span></td>
+                            <td>{{ f.location }}</td>
+                            <td><span class="badge badge-success">Available</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #94a3b8;">No surplus food available currently.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Submit Food Request from Receiver Portal -->
+<div class="modal-overlay" id="addReceiverRequestModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Enqueue Food Request</h3>
+            <button class="modal-close" onclick="closeModal('addReceiverRequestModal')">&times;</button>
+        </div>
+        <form id="addReceiverRequestForm">
+            <input type="hidden" name="recipient_id" value="{{ session.get('recipient_id', 1) }}">
+            <input type="hidden" name="priority" value="{{ recipient.priority if recipient else 8 }}">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Food Category Needed *</label>
+                    <select name="food_category" class="form-control" required>
+                        <option value="Meals">Cooked Meals (Biryani, Rice, Curry)</option>
+                        <option value="Bread">Bread & Bakery Items</option>
+                        <option value="Breakfast">Breakfast Items (Idli, Dosa, Poori)</option>
+                        <option value="Fruits">Fresh Fruits & Produce</option>
+                        <option value="Snacks">Snacks & Sandwiches</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quantity Needed (Packets/Servings) *</label>
+                    <input type="number" name="quantity_requested" class="form-control" min="1" placeholder="e.g. 35" required>
+                </div>
+                <div class="alert-banner alert-info" style="margin-bottom:0; font-size:0.82rem;">
+                    <div><i class="fa-solid fa-info-circle"></i> Your request will be added to the <strong>FIFO Queue</strong> and processed in arrival sequence according to priority.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('addReceiverRequestModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Submit Request to Queue</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const rForm = document.getElementById('addReceiverRequestForm');
+    if (rForm) {
+        rForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = Object.fromEntries(new FormData(rForm).entries());
+            const res = await fetch('/api/requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                showToast(result.message);
+                closeModal('addReceiverRequestModal');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                showToast(result.message, 'error');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

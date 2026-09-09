@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block header_title %}Donors Management{% endblock %}
+{% block header_subtitle %}Surplus food contributors, restaurants, cafeterias, and banquet organizations{% endblock %}
+
+{% block content %}
+
+<!-- Educational Box -->
+<div class="dsa-info-box">
+    <div class="dsa-info-header">
+        <div class="dsa-info-title"><i class="fa-solid fa-hand-holding-heart"></i> Entity Role: Food Donors</div>
+        <span class="complexity-pill">Relational Mapping 1:N with Food Batches</span>
+    </div>
+    <div class="dsa-info-body">
+        Donors represent supply source nodes in our graph network. Each registered donor can contribute multiple batches of food records linked dynamically in our Linked List inventory.
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-users"></i> Registered Donors Directory</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('addDonorModal')">
+            <i class="fa-solid fa-plus"></i> Register New Donor
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Donor ID</th>
+                        <th>Name</th>
+                        <th>Organization / Source</th>
+                        <th>Contact Number</th>
+                        <th>Location Hub</th>
+                        <th>Total Donations</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if donors %}
+                        {% for d in donors %}
+                        <tr>
+                            <td><strong>#{{ d.donor_id }}</strong></td>
+                            <td><strong>{{ d.name }}</strong></td>
+                            <td>{{ d.organization or 'Individual Contributor' }}</td>
+                            <td>{{ d.contact }}</td>
+                            <td><span class="badge badge-info">{{ d.location }}</span></td>
+                            <td><span class="badge badge-success">{{ d.donation_count or 0 }} batches</span></td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteDonorItem({{ d.donor_id }})">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #94a3b8;">No donors found in database.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Donor -->
+<div class="modal-overlay" id="addDonorModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Register New Donor</h3>
+            <button class="modal-close" onclick="closeModal('addDonorModal')">&times;</button>
+        </div>
+        <form id="addDonorForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Contact Person Name *</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Ramesh Kumar, Chef Priya" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Organization / Restaurant / Hotel</label>
+                    <input type="text" name="organization" class="form-control" placeholder="e.g. Annapoorna Restaurant, College Mess">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contact Number *</label>
+                    <input type="text" name="contact" class="form-control" placeholder="e.g. +91 98401 23456" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location / Area *</label>
+                    <input type="text" name="location" class="form-control" placeholder="e.g. Central Kitchen Hub, Anna Nagar" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('addDonorModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Register Donor</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

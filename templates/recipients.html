@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block header_title %}Recipients & Shelters Management{% endblock %}
+{% block header_subtitle %}Orphanages, Old Age Homes, Relief Camps, and NGO distribution partners{% endblock %}
+
+{% block content %}
+
+<!-- DSA Educational Box -->
+<div class="dsa-info-box">
+    <div class="dsa-info-header">
+        <div class="dsa-info-title"><i class="fa-solid fa-users"></i> Entity Role: Beneficiary Demand Nodes</div>
+        <span class="complexity-pill">Priority Rating: 1 (Low) to 10 (Critical Urgency)</span>
+    </div>
+    <div class="dsa-info-body">
+        Recipients represent the demand sink nodes. Each recipient is tagged with an urgency level (Priority). This priority score directly feeds our <strong>Greedy</strong> and <strong>0/1 Knapsack Dynamic Programming</strong> algorithms for optimal allocation.
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-house-chimney-user"></i> Registered Recipient Centers</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('addRecipientModal')">
+            <i class="fa-solid fa-plus"></i> Add New Recipient
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Recipient ID</th>
+                        <th>Name</th>
+                        <th>Organization</th>
+                        <th>Contact Number</th>
+                        <th>Location</th>
+                        <th>Priority Rating</th>
+                        <th>Total Requests</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recipients %}
+                        {% for r in recipients %}
+                        <tr>
+                            <td><strong>#{{ r.recipient_id }}</strong></td>
+                            <td><strong>{{ r.name }}</strong></td>
+                            <td>{{ r.organization or 'Individual Shelter' }}</td>
+                            <td>{{ r.contact }}</td>
+                            <td><span class="badge badge-info">{{ r.location }}</span></td>
+                            <td>
+                                <span class="badge {% if r.priority >= 9 %}badge-danger{% elif r.priority >= 7 %}badge-warning{% else %}badge-secondary{% endif %}">
+                                    Level {{ r.priority }}/10
+                                </span>
+                            </td>
+                            <td>{{ r.total_requests or 0 }} requests</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteRecipientItem({{ r.recipient_id }})">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: #94a3b8;">No recipients found in database.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Recipient -->
+<div class="modal-overlay" id="addRecipientModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add Recipient Beneficiary</h3>
+            <button class="modal-close" onclick="closeModal('addRecipientModal')">&times;</button>
+        </div>
+        <form id="addRecipientForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Contact / Incharge Name *</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Father Thomas, Sister Mary" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Organization / Shelter Name</label>
+                    <input type="text" name="organization" class="form-control" placeholder="e.g. St. Joseph Orphanage, Asha Old Age Home">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Contact Number *</label>
+                        <input type="text" name="contact" class="form-control" placeholder="e.g. +91 98765 43210" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Urgency / Priority (1 - 10) *</label>
+                        <input type="number" name="priority" class="form-control" min="1" max="10" value="5" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location / Drop-off Hub *</label>
+                    <input type="text" name="location" class="form-control" placeholder="e.g. Guindy Care Home, Adyar Shelter Home" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('addRecipientModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Recipient</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

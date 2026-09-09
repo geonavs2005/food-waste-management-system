@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration | Food Waste Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #064e3b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .register-card {
+            background: #ffffff;
+            border-radius: var(--border-radius-lg);
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        .register-header {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            color: #ffffff;
+            padding: 24px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-card">
+    <div class="register-header">
+        <div style="font-size: 2rem; margin-bottom: 4px;"><i class="fa-solid fa-user-plus"></i></div>
+        <h2 style="font-size: 1.3rem; font-weight: 700;">Account Registration</h2>
+        <p style="font-size: 0.82rem; opacity: 0.9;">Sign up as a Food Donor (Contributor) or Receiver (Shelter)</p>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="padding: 16px 24px 0;">
+                {% for category, message in messages %}
+                <div class="alert-banner alert-{{ category if category != 'error' else 'danger' }}" style="padding: 8px 12px; font-size: 0.82rem; margin-bottom:0;">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth_bp.register_page') }}" style="padding: 24px;">
+        <div class="form-group">
+            <label class="form-label">I Want to Register As: *</label>
+            <select name="role" id="regRoleSelect" class="form-control" onchange="toggleReceiverFields()" required>
+                <option value="donor">Food Donor (Restaurant, Banquet, University Mess)</option>
+                <option value="receiver">Food Receiver (Orphanage, Old Age Home, NGO Shelter)</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Username *</label>
+                <input type="text" name="username" class="form-control" placeholder="e.g. greenbakery" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password *</label>
+                <input type="password" name="password" class="form-control" placeholder="Password" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Contact Person Name *</label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Sarah Jenkins / Father Thomas" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" id="orgLabel">Organization Name</label>
+            <input type="text" name="organization" class="form-control" placeholder="e.g. St. Joseph Orphanage, Green Valley Bakery">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Contact Phone *</label>
+                <input type="text" name="contact" class="form-control" placeholder="+91 98402 34567" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Location / Hub *</label>
+                <input type="text" name="location" class="form-control" placeholder="e.g. Anna Nagar Food Bank, Guindy" required>
+            </div>
+        </div>
+
+        <div class="form-group" id="priorityField" style="display: none;">
+            <label class="form-label">Urgency / Priority Level (1 to 10)</label>
+            <input type="number" name="priority" class="form-control" min="1" max="10" value="8">
+            <small style="color: #64748b; font-size:0.75rem;">Used by Greedy & Dynamic Programming algorithms to prioritize food fulfillment.</small>
+        </div>
+
+        <div style="margin-top: 16px;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px;">
+                <i class="fa-solid fa-check"></i> Complete Registration
+            </button>
+        </div>
+
+        <div style="margin-top: 16px; text-align: center; font-size: 0.85rem; color: #64748b;">
+            Already registered?
+            <a href="{{ url_for('auth_bp.login_page') }}" style="color: var(--primary-dark); font-weight: 700; text-decoration: none;">
+                Sign In
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleReceiverFields() {
+    const role = document.getElementById('regRoleSelect').value;
+    const priField = document.getElementById('priorityField');
+    const orgLabel = document.getElementById('orgLabel');
+    if (role === 'receiver') {
+        priField.style.display = 'block';
+        orgLabel.innerText = 'Shelter / Foundation Name *';
+    } else {
+        priField.style.display = 'none';
+        orgLabel.innerText = 'Organization / Restaurant Name';
+    }
+}
+</script>
+
+</body>
+</html>

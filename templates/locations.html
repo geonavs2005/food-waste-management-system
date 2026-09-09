@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block header_title %}Location Network & Graph Algorithms{% endblock %}
+{% block header_subtitle %}Custom Adjacency List Graph representation with interactive BFS and DFS traversals{% endblock %}
+
+{% block content %}
+
+<!-- DSA Educational Box -->
+<div class="dsa-info-box">
+    <div class="dsa-info-header">
+        <div class="dsa-info-title"><i class="fa-solid fa-network-wired"></i> Data Structure: Graph (Adjacency List)</div>
+        <span class="complexity-pill">BFS: O(V + E) | DFS: O(V + E) | Shortest Path: O(V^2 / E log V)</span>
+    </div>
+    <div class="dsa-info-body">
+        <strong>What is it?</strong> A non-linear data structure consisting of vertices $V$ (Locations: Donor Kitchens, Food Banks, Shelters) and edges $E$ (Logistics transport routes with kilometer weights).<br>
+        <strong>Why are we using it?</strong> Models the real-world physical supply chain route map for food transport vehicles.<br>
+        <strong>Traversals:</strong>
+        <ul style="margin-left: 20px; margin-top: 4px;">
+            <li><strong>BFS (Breadth-First Search):</strong> Explores all immediate neighbor hubs level-by-level using our FIFO Queue.</li>
+            <li><strong>DFS (Depth-First Search):</strong> Explores transport paths deeply along each route before backtracking.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Graph Controls & Visualizer Canvas -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-circle-nodes" style="color: var(--primary);"></i> Interactive Food Supply Network Graph
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm" onclick="openModal('addLocationModal')">
+                <i class="fa-solid fa-plus"></i> Add Hub Vertex
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="openModal('addConnectionModal')">
+                <i class="fa-solid fa-link"></i> Connect Hubs (Edge)
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Interactive Traversal Action Bar -->
+        <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div style="font-weight: 600; font-size: 0.85rem;">Run Traversal from:</div>
+            <select id="startNodeSelect" class="form-control" style="width: auto; min-width: 180px;">
+                {% for v in vertices %}
+                <option value="{{ v.name }}">{{ v.name }} ({{ v.type }})</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="triggerBFS()">
+                <i class="fa-solid fa-play"></i> Run BFS (Queue Level-Order)
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="triggerDFS()">
+                <i class="fa-solid fa-route"></i> Run DFS (Deep Branch)
+            </button>
+        </div>
+
+        <!-- Traversal Output Log Banner -->
+        <div id="traversalLogBanner" style="display: none; padding: 12px 16px; border-radius: 8px; background: #e0f2fe; border: 1px solid #bae6fd; margin-bottom: 16px; font-size: 0.9rem;">
+            <strong id="traversalAlgoTitle"></strong>: <span id="traversalPathText" style="font-weight: bold; color: #0369a1;"></span>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="canvas-wrapper">
+            <canvas id="graphCanvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Graph Adjacency List & Shortest Path Panel -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+    <!-- Adjacency List Table -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-list-check"></i> Graph Adjacency List (Internal Memory)</div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Location Vertex (V)</th>
+                            <th>Type</th>
+                            <th>Connected Neighbors & Distances</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in vertices %}
+                        <tr>
+                            <td><strong>{{ v.name }}</strong></td>
+                            <td><span class="badge badge-info">{{ v.type }}</span></td>
+                            <td>
+                                {% if adj_list[v.name] %}
+                                    {% for n in adj_list[v.name] %}
+                                        <span class="badge badge-secondary" style="margin-right: 4px;">
+                                            {{ n.node }} ({{ n.weight }} km)
+                                        </span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span style="color: #94a3b8;">No outbound edges</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortest Route Planner -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-map-location-dot"></i> Shortest Transport Route Finder</div>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">Origin Location (Source)</label>
+                <select id="sourceLocationSelect" class="form-control">
+                    {% for v in vertices %}
+                    <option value="{{ v.name }}">{{ v.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Destination Location (Target)</label>
+                <select id="destLocationSelect" class="form-control">
+                    {% for v in vertices %}
+                    <option value="{{ v.name }}" {% if loop.index == 4 %}selected{% endif %}>{{ v.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="findShortestRoute()">
+                <i class="fa-solid fa-compass"></i> Calculate Shortest Route
+            </button>
+            <div id="routeResultBox" style="margin-top: 14px; font-size: 0.9rem;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Location -->
+<div class="modal-overlay" id="addLocationModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add Location Hub Vertex</h3>
+            <button class="modal-close" onclick="closeModal('addLocationModal')">&times;</button>
+        </div>
+        <form id="addLocationForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Hub Name *</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Mylapore Collection Center" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Node Category *</label>
+                    <select name="type" class="form-control">
+                        <option value="Donor Hub">Donor Hub</option>
+                        <option value="Collection Center">Collection Center</option>
+                        <option value="NGO/Shelter">NGO / Shelter</option>
+                        <option value="City Hub">City Hub</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('addLocationModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Vertex</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Add Connection -->
+<div class="modal-overlay" id="addConnectionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add Route Connection (Edge)</h3>
+            <button class="modal-close" onclick="closeModal('addConnectionModal')">&times;</button>
+        </div>
+        <form id="addConnectionForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">From Hub *</label>
+                    <select name="from_location" class="form-control" required>
+                        {% for v in vertices %}
+                        <option value="{{ v.name }}">{{ v.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">To Hub *</label>
+                    <select name="to_location" class="form-control" required>
+                        {% for v in vertices %}
+                        <option value="{{ v.name }}">{{ v.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Distance (Kilometers) *</label>
+                    <input type="number" name="distance" class="form-control" min="1" value="5" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('addConnectionModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-link"></i> Add Edge</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let graphRenderer;
+const verticesData = {{ vertices | tojson }};
+const edgesData = {{ edges | tojson }};
+
+window.addEventListener('load', () => {
+    graphRenderer = new GraphCanvasRenderer('graphCanvas');
+    graphRenderer.drawGraph(verticesData, edgesData);
+
+    // Form handlers
+    const locForm = document.getElementById('addLocationForm');
+    if (locForm) {
+        locForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = Object.fromEntries(new FormData(locForm).entries());
+            const res = await fetch('/api/locations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                showToast(result.message);
+                closeModal('addLocationModal');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                showToast(result.message, 'error');
+            }
+        });
+    }
+
+    const connForm = document.getElementById('addConnectionForm');
+    if (connForm) {
+        connForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = Object.fromEntries(new FormData(connForm).entries());
+            const res = await fetch('/api/locations/connections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                showToast(result.message);
+                closeModal('addConnectionModal');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                showToast(result.message, 'error');
+            }
+        });
+    }
+});
+
+async function triggerBFS() {
+    const startNode = document.getElementById('startNodeSelect').value;
+    const res = await fetch('/api/graph/bfs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ start_node: startNode })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        const order = data.result.traversal_order;
+        document.getElementById('traversalAlgoTitle').innerText = 'BFS Traversal Order (Level-Order Queue)';
+        document.getElementById('traversalPathText').innerText = order.join(' ➔ ');
+        document.getElementById('traversalLogBanner').style.display = 'block';
+        showToast('Running BFS Animated Traversal...');
+        graphRenderer.animateTraversal(verticesData, edgesData, order);
+    }
+}
+
+async function triggerDFS() {
+    const startNode = document.getElementById('startNodeSelect').value;
+    const res = await fetch('/api/graph/dfs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ start_node: startNode })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        const order = data.result.traversal_order;
+        document.getElementById('traversalAlgoTitle').innerText = 'DFS Traversal Order (Deep Branch Recursion)';
+        document.getElementById('traversalPathText').innerText = order.join(' ➔ ');
+        document.getElementById('traversalLogBanner').style.display = 'block';
+        showToast('Running DFS Animated Traversal...');
+        graphRenderer.animateTraversal(verticesData, edgesData, order);
+    }
+}
+
+async function findShortestRoute() {
+    const u = document.getElementById('sourceLocationSelect').value;
+    const v = document.getElementById('destLocationSelect').value;
+    if (u === v) return showToast('Source and Destination cannot be the same', 'error');
+
+    const res = await fetch('/api/graph/shortest_path', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ start_node: u, end_node: v })
+    });
+    const data = await res.json();
+    const box = document.getElementById('routeResultBox');
+    if (data.path && data.path.length > 0) {
+        box.innerHTML = `
+            <div class="alert-banner alert-info" style="margin-bottom:0;">
+                <div>
+                    <strong>Shortest Route:</strong> ${data.path.join(' ➔ ')}<br>
+                    <strong>Total Distance:</strong> ${data.distance} km (${data.hops} transfer hops)
+                </div>
+            </div>
+        `;
+        graphRenderer.drawGraph(verticesData, edgesData, data.path);
+    } else {
+        box.innerHTML = `<div class="badge badge-danger">No connected path found between ${u} and ${v}</div>`;
+    }
+}
+</script>
+{% endblock %}

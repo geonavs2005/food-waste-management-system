@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Role Login | Food Waste Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #064e3b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-wrapper {
+            width: 100%;
+            max-width: 480px;
+        }
+        .login-card {
+            background: #ffffff;
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .login-header {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            color: #ffffff;
+            padding: 26px 20px;
+            text-align: center;
+        }
+        .role-switch-container {
+            display: flex;
+            background: #f1f5f9;
+            padding: 5px;
+            margin: 18px 20px 10px;
+            border-radius: var(--border-radius-sm);
+            gap: 4px;
+        }
+        .role-btn {
+            flex: 1;
+            padding: 9px 6px;
+            border: none;
+            background: transparent;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #64748b;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .role-btn.active {
+            background: #ffffff;
+            color: var(--primary-dark);
+            box-shadow: var(--shadow-sm);
+        }
+        .demo-pill-box {
+            background: #f8fafc;
+            border: 1px dashed var(--border-color);
+            padding: 10px 14px;
+            border-radius: var(--border-radius-sm);
+            margin: 12px 20px 16px;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+        .demo-btn {
+            display: inline-block;
+            background: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 4px;
+            font-size: 0.74rem;
+            color: #0f172a;
+            transition: var(--transition);
+        }
+        .demo-btn:hover { background: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div style="font-size: 2.2rem; margin-bottom: 4px;"><i class="fa-solid fa-seedling"></i></div>
+            <h2 style="font-size: 1.3rem; font-weight: 700;">Food Waste Management System</h2>
+            <p style="font-size: 0.82rem; opacity: 0.9; margin-top: 2px;">Role-Based Authentication (MCA DSA Project)</p>
+        </div>
+
+        <!-- Role Toggle: Admin vs Donor vs Receiver -->
+        <div class="role-switch-container">
+            <button class="role-btn active" id="btnAdminRole" onclick="switchRole('admin')">
+                <i class="fa-solid fa-shield-halved"></i> Admin
+            </button>
+            <button class="role-btn" id="btnDonorRole" onclick="switchRole('donor')">
+                <i class="fa-solid fa-hand-holding-heart"></i> Food Donor
+            </button>
+            <button class="role-btn" id="btnReceiverRole" onclick="switchRole('receiver')">
+                <i class="fa-solid fa-users"></i> Receiver / Shelter
+            </button>
+        </div>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div style="padding: 0 20px; margin-top: 10px;">
+                    {% for category, message in messages %}
+                    <div class="alert-banner alert-{{ category if category != 'error' else 'danger' }}" style="padding: 8px 12px; font-size: 0.82rem; margin-bottom: 6px;">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Viva 1-Click Quick Demo Login Helper -->
+        <div class="demo-pill-box">
+            <div><i class="fa-solid fa-lightbulb" style="color: var(--accent);"></i> <strong>Viva 1-Click Demo Fill:</strong></div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                <span class="demo-btn" onclick="fillDemo('admin', 'admin', 'admin123')">
+                    <i class="fa-solid fa-user-shield"></i> Admin (admin / admin123)
+                </span>
+                <span class="demo-btn" onclick="fillDemo('donor', 'ramesh', 'donor123')">
+                    <i class="fa-solid fa-store"></i> Donor (ramesh / donor123)
+                </span>
+                <span class="demo-btn" onclick="fillDemo('receiver', 'thomas', 'receiver123')">
+                    <i class="fa-solid fa-house-chimney-user"></i> Receiver (thomas / receiver123)
+                </span>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth_bp.login_page') }}" style="padding: 0 20px 24px;">
+            <input type="hidden" name="role" id="selectedRoleInput" value="admin">
+
+            <div class="form-group">
+                <label class="form-label" id="usernameLabel">Admin Username</label>
+                <div style="position: relative;">
+                    <input type="text" name="username" id="usernameInput" class="form-control" placeholder="Enter username" required value="admin">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div style="position: relative;">
+                    <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter password" required value="admin123">
+                </div>
+            </div>
+
+            <div style="margin-top: 18px;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px;">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> <span id="loginBtnText">Sign In as Administrator</span>
+                </button>
+            </div>
+
+            <div style="margin-top: 16px; text-align: center; font-size: 0.85rem; color: #64748b;">
+                <span>Need a new account?</span>
+                <a href="{{ url_for('auth_bp.register_page') }}" style="color: var(--primary-dark); font-weight: 700; text-decoration: none; margin-left: 4px;">
+                    Register as Donor / Receiver
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function switchRole(role) {
+    const btnAdmin = document.getElementById('btnAdminRole');
+    const btnDonor = document.getElementById('btnDonorRole');
+    const btnReceiver = document.getElementById('btnReceiverRole');
+    const roleInput = document.getElementById('selectedRoleInput');
+    const userLabel = document.getElementById('usernameLabel');
+    const btnText = document.getElementById('loginBtnText');
+    const uInput = document.getElementById('usernameInput');
+    const pInput = document.getElementById('passwordInput');
+
+    roleInput.value = role;
+
+    btnAdmin.classList.remove('active');
+    btnDonor.classList.remove('active');
+    btnReceiver.classList.remove('active');
+
+    if (role === 'admin') {
+        btnAdmin.classList.add('active');
+        userLabel.innerText = 'Admin Username';
+        btnText.innerText = 'Sign In as Administrator';
+        uInput.value = 'admin';
+        pInput.value = 'admin123';
+    } else if (role === 'donor') {
+        btnDonor.classList.add('active');
+        userLabel.innerText = 'Donor Username';
+        btnText.innerText = 'Sign In as Food Donor';
+        uInput.value = 'ramesh';
+        pInput.value = 'donor123';
+    } else {
+        btnReceiver.classList.add('active');
+        userLabel.innerText = 'Receiver / Shelter Username';
+        btnText.innerText = 'Sign In as Receiver / Shelter';
+        uInput.value = 'thomas';
+        pInput.value = 'receiver123';
+    }
+}
+
+function fillDemo(role, user, pass) {
+    switchRole(role);
+    document.getElementById('usernameInput').value = user;
+    document.getElementById('passwordInput').value = pass;
+}
+</script>
+
+</body>
+</html>

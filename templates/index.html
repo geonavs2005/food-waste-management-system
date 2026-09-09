@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block header_title %}System Dashboard{% endblock %}
+{% block header_subtitle %}Real-time surplus food tracking, algorithm insights, and operational statistics{% endblock %}
+
+{% block content %}
+
+<!-- Expiry Warning Alert Banner -->
+{% if expiring_count > 0 %}
+<div class="alert-banner alert-warning">
+    <div>
+        <strong><i class="fa-solid fa-triangle-exclamation"></i> Urgent Action Required:</strong>
+        <span><strong>{{ expiring_count }}</strong> surplus food item(s) are expiring TODAY! Prioritize redistribution via Greedy Algorithm.</span>
+    </div>
+    <a href="{{ url_for('algorithm_bp.algorithms_page') }}" class="btn btn-sm btn-primary">
+        <i class="fa-solid fa-bolt"></i> Run Greedy Allocation
+    </a>
+</div>
+{% endif %}
+
+<!-- Real-Time Metrics Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-emerald"><i class="fa-solid fa-box-archive"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ total_food_records }}</div>
+            <div class="stat-label">Total Food Batches</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-blue"><i class="fa-solid fa-utensils"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ total_food_quantity }}</div>
+            <div class="stat-label">Available Packets / Qty</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-amber"><i class="fa-solid fa-hand-holding-heart"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ total_donors }}</div>
+            <div class="stat-label">Registered Donors</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-purple"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ total_recipients }}</div>
+            <div class="stat-label">Recipient Shelters</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-rose"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ pending_requests_count }}</div>
+            <div class="stat-label">Pending FIFO Requests</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrapper stat-icon-indigo"><i class="fa-solid fa-truck-fast"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">{{ distributed_count }}</div>
+            <div class="stat-label">Distributed Batches</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Buttons -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Quick Operations</div>
+        <span class="badge badge-info">Immediate Execution</span>
+    </div>
+    <div class="card-body" style="display: flex; flex-wrap: wrap; gap: 10px;">
+        <a href="{{ url_for('food_bp.food_page') }}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus"></i> Add Food (Linked List)
+        </a>
+        <a href="{{ url_for('donor_bp.donors_page') }}" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-user-plus"></i> Add Donor
+        </a>
+        <a href="{{ url_for('recipient_bp.recipients_page') }}" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-house-chimney-user"></i> Add Recipient
+        </a>
+        <a href="{{ url_for('request_bp.requests_page') }}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-cart-plus"></i> Enqueue Request
+        </a>
+        <button class="btn btn-primary btn-sm" onclick="processNextQueueRequest()">
+            <i class="fa-solid fa-forward-step"></i> Process Next Request (FIFO Dequeue)
+        </button>
+        <a href="{{ url_for('location_bp.locations_page') }}" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-diagram-project"></i> Location Network (Graph)
+        </a>
+        <a href="{{ url_for('algorithm_bp.dsa_visualizer_page') }}" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-code-fork"></i> 11-in-1 DSA Visualizer
+        </a>
+        <a href="{{ url_for('algorithm_bp.algorithms_page') }}" class="btn btn-outline btn-sm">
+            <i class="fa-solid fa-gears"></i> Greedy vs DP Optimizer
+        </a>
+    </div>
+</div>
+
+<!-- Dual Columns: Recent Operations Stack + Highest Priority Requests -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px;">
+    
+    <!-- LIFO Stack Operations -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fa-solid fa-layer-group" style="color: var(--info);"></i> Recent Operations (Stack: LIFO)
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="triggerStackUndo()">
+                <i class="fa-solid fa-rotate-left"></i> Undo Top Operation
+            </button>
+        </div>
+        <div class="card-body">
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+                Maintained via custom <code>OperationsStack</code> linked list. The newest operation sits at the <strong>TOP</strong>.
+            </p>
+            <div class="stack-box-container">
+                {% if recent_ops %}
+                    {% for op in recent_ops %}
+                    <div class="stack-item {% if loop.first %}top-item{% endif %}">
+                        <div>
+                            <strong>{{ op.action_type }}</strong>
+                            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">{{ op.details }}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            {% if loop.first %}
+                            <span class="stack-badge-top">TOP OF STACK</span>
+                            {% endif %}
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">{{ op.timestamp }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #94a3b8; padding: 20px;">No operations recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- High Urgency Pending Requests -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fa-solid fa-fire" style="color: var(--danger);"></i> Highest Urgency Requests
+            </div>
+            <a href="{{ url_for('request_bp.requests_page') }}" class="btn btn-outline btn-sm">View All Queue</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Req #</th>
+                            <th>Recipient</th>
+                            <th>Category</th>
+                            <th>Qty</th>
+                            <th>Urgency</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if top_priority_requests %}
+                            {% for req in top_priority_requests %}
+                            <tr>
+                                <td>#{{ req.request_id }}</td>
+                                <td><strong>{{ req.recipient_name }}</strong></td>
+                                <td><span class="badge badge-info">{{ req.food_category }}</span></td>
+                                <td>{{ req.quantity_requested }} pkts</td>
+                                <td>
+                                    <span class="badge {% if req.priority >= 9 %}badge-danger{% elif req.priority >= 7 %}badge-warning{% else %}badge-secondary{% endif %}">
+                                        Level {{ req.priority }}/10
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('algorithm_bp.algorithms_page') }}" class="btn btn-primary btn-sm">Allocate</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8;">No pending requests waiting in queue.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- MCA Project DSA Educational Viva Card -->
+<div class="dsa-info-box">
+    <div class="dsa-info-header">
+        <div class="dsa-info-title"><i class="fa-solid fa-graduation-cap"></i> MCA Viva Quick Guide: DSA in this Project</div>
+        <span class="complexity-pill">14 Algorithms Implemented</span>
+    </div>
+    <div class="dsa-info-body">
+        This project maps real-world surplus food distribution challenges to classic computer science data structures & algorithms without using Python standard library shortcuts:
+    </div>
+    <div class="dsa-qa-grid">
+        <div class="dsa-qa-item">
+            <strong>Linked List (O(n))</strong>
+            Dynamic inventory storage where food items are inserted and deleted via pointer manipulation.
+        </div>
+        <div class="dsa-qa-item">
+            <strong>Queue (FIFO - O(1))</strong>
+            Fair distribution of incoming recipient requests in exact arrival sequence.
+        </div>
+        <div class="dsa-qa-item">
+            <strong>Stack (LIFO - O(1))</strong>
+            Audit logs tracking all administrative actions with 1-click Undo capability.
+        </div>
+        <div class="dsa-qa-item">
+            <strong>Graph & BFS/DFS (O(V+E))</strong>
+            Logistics network linking Donors, Storage Centers, and Shelters with path exploration.
+        </div>
+        <div class="dsa-qa-item">
+            <strong>Greedy Algorithm (O(n log n))</strong>
+            Rapid heuristic allocation solving emergency shortages by prioritizing highest urgency.
+        </div>
+        <div class="dsa-qa-item">
+            <strong>Dynamic Programming (O(n*W))</strong>
+            0/1 Knapsack optimization maximizing total societal benefit under constrained surplus food.
+        </div>
+    </div>
+</div>
+
+{% endblock %}

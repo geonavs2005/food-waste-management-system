@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block header_title %}Algorithm Optimizer & Comparison{% endblock %}
+{% block header_subtitle %}Interactive testing of Greedy Heuristics, Dynamic Programming (0/1 Knapsack), and Backtracking{% endblock %}
+
+{% block content %}
+
+<!-- Tabs Navigation -->
+<div class="tabs-container">
+    <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="tab-greedy">
+            <i class="fa-solid fa-bolt"></i> 1. Greedy Distribution (O(n log n))
+        </button>
+        <button class="tab-btn" data-tab="tab-dp">
+            <i class="fa-solid fa-table-cells"></i> 2. Dynamic Programming 0/1 Knapsack (O(n*W))
+        </button>
+        <button class="tab-btn" data-tab="tab-backtracking">
+            <i class="fa-solid fa-code-fork"></i> 3. Backtracking Assignment (O(K^M))
+        </button>
+    </div>
+
+    <!-- ================= TAB 1: GREEDY ================= -->
+    <div class="tab-pane active" id="tab-greedy">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title"><i class="fa-solid fa-bolt"></i> Greedy Algorithm: Locally Optimal Strategy</div>
+                <span class="complexity-pill">Time: O(n log n) | Space: O(n)</span>
+            </div>
+            <div class="dsa-info-body">
+                <strong>How it works here:</strong> There is limited surplus food and multiple competing recipient requests. The Greedy strategy sorts requests by highest Priority (or Urgency-per-Quantity ratio) using custom Merge Sort and allocates food sequentially until capacity runs out. It never reconsiders previous choices.
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-sliders"></i> Greedy Allocation Simulator</div>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom:0; min-width: 200px;">
+                        <label class="form-label">Available Surplus Food (Packets)</label>
+                        <input type="number" id="greedyFoodInput" class="form-control" value="120" min="10">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0; min-width: 200px;">
+                        <label class="form-label">Greedy Heuristic</label>
+                        <select id="greedyHeuristicSelect" class="form-control">
+                            <option value="priority">Highest Urgency (Priority) First</option>
+                            <option value="ratio">Highest Priority-per-Packet Ratio</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="runGreedyAlgorithm()">
+                        <i class="fa-solid fa-play"></i> Execute Greedy Allocation
+                    </button>
+                </div>
+
+                <!-- Greedy Output -->
+                <div id="greedyResultContainer" style="margin-top: 24px; display: none;">
+                    <div class="stats-grid" style="margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper stat-icon-emerald"><i class="fa-solid fa-box-open"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="greedyAllocatedVal">0</div>
+                                <div class="stat-label">Food Allocated (Packets)</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper stat-icon-blue"><i class="fa-solid fa-battery-half"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="greedyRemainingVal">0</div>
+                                <div class="stat-label">Remaining Surplus Food</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper stat-icon-amber"><i class="fa-solid fa-star"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="greedyBenefitVal">0</div>
+                                <div class="stat-label">Total Priority Satisfied</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 style="font-size: 1rem; margin-bottom: 10px;">Step-by-Step Greedy Decision Trace</h4>
+                    <div class="table-responsive">
+                        <table class="table" id="greedyTraceTable">
+                            <thead>
+                                <tr>
+                                    <th>Step #</th>
+                                    <th>Recipient</th>
+                                    <th>Quantity</th>
+                                    <th>Priority</th>
+                                    <th>Greedy Decision</th>
+                                    <th>Remaining Food</th>
+                                    <th>Reasoning</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TAB 2: DYNAMIC PROGRAMMING ================= -->
+    <div class="tab-pane" id="tab-dp">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title"><i class="fa-solid fa-table-cells"></i> 0/1 Knapsack Dynamic Programming: Global Optimality</div>
+                <span class="complexity-pill">Time: O(n * W) | Space: O(n * W)</span>
+            </div>
+            <div class="dsa-info-body">
+                <strong>How it works here:</strong> Maximizes the total priority benefit without exceeding the surplus food budget $W$. Unlike Greedy, DP guarantees the <em>mathematically optimal</em> subset of requests by solving overlapping subproblems bottom-up and memoizing intermediate scores in a 2D table.
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-gears"></i> DP Knapsack Allocation Optimizer</div>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom:0; min-width: 220px;">
+                        <label class="form-label">Total Food Capacity Limit (W)</label>
+                        <input type="number" id="dpCapacityInput" class="form-control" value="100" min="10">
+                    </div>
+                    <button class="btn btn-secondary" onclick="runDPAlgorithm()">
+                        <i class="fa-solid fa-calculator"></i> Compute Optimal DP Subset
+                    </button>
+                </div>
+
+                <!-- DP Output -->
+                <div id="dpResultContainer" style="margin-top: 24px; display: none;">
+                    <div class="stats-grid" style="margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper stat-icon-purple"><i class="fa-solid fa-trophy"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="dpBenefitVal">0</div>
+                                <div class="stat-label">Max Total Priority Score</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper stat-icon-emerald"><i class="fa-solid fa-chart-pie"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="dpUsedVal">0</div>
+                                <div class="stat-label">Food Capacity Utilized</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper stat-icon-blue"><i class="fa-solid fa-check-double"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="dpSelectedCountVal">0</div>
+                                <div class="stat-label">Selected Requests</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 style="font-size: 1rem; margin-bottom: 10px;">Selected Optimal Requests (Backtracked from Table)</h4>
+                    <div class="table-responsive" style="margin-bottom: 20px;">
+                        <table class="table" id="dpSelectedTable">
+                            <thead>
+                                <tr>
+                                    <th>Req #</th>
+                                    <th>Recipient</th>
+                                    <th>Category</th>
+                                    <th>Quantity (Weight)</th>
+                                    <th>Priority (Value)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <h4 style="font-size: 1rem; margin-bottom: 10px;">Memoized DP Matrix Snapshot (DP[i][w])</h4>
+                    <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                        <table class="dp-table" id="dpMatrixTable"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TAB 3: BACKTRACKING ================= -->
+    <div class="tab-pane" id="tab-backtracking">
+        <div class="dsa-info-box">
+            <div class="dsa-info-header">
+                <div class="dsa-info-title"><i class="fa-solid fa-code-fork"></i> Backtracking: Constraint Satisfaction & State Search</div>
+                <span class="complexity-pill">Time: O(K^M) Worst Case | Space: O(M) Recursion Tree</span>
+            </div>
+            <div class="dsa-info-body">
+                <strong>Problem:</strong> Assign $M$ food donors to $K$ collection centers without exceeding any center's intake capacity.<br>
+                <strong>Mechanism:</strong> Explores state space recursively. When an assignment violates center capacity, it prunes the branch, <strong>backtracks</strong> (undoes choice and restores capacity), and tries an alternate center.
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fa-solid fa-sitemap"></i> Donor-to-Center Assignment Solver</div>
+                <button class="btn btn-primary btn-sm" onclick="runBacktrackingAlgorithm()">
+                    <i class="fa-solid fa-play"></i> Run Backtracking Solver
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="btResultContainer" style="display: none;">
+                    <div class="stats-grid" style="margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper stat-icon-amber"><i class="fa-solid fa-rotate-left"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="btBacktracksVal">0</div>
+                                <div class="stat-label">Total Backtrack Undo Steps</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper stat-icon-indigo"><i class="fa-solid fa-list-ol"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="btStepsVal">0</div>
+                                <div class="stat-label">Exploration State Steps</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 style="font-size: 1rem; margin-bottom: 10px;">Feasible Assignment Result</h4>
+                    <div class="table-responsive" style="margin-bottom: 20px;">
+                        <table class="table" id="btAssignmentTable">
+                            <thead>
+                                <tr>
+                                    <th>Donor</th>
+                                    <th>Batch Quantity</th>
+                                    <th>Assigned Collection Center</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <h4 style="font-size: 1rem; margin-bottom: 10px;">Backtracking Search Tree Log</h4>
+                    <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                        <table class="table" id="btTraceTable">
+                            <thead>
+                                <tr>
+                                    <th>Step</th>
+                                    <th>Action</th>
+                                    <th>Donor</th>
+                                    <th>Target Center</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function runGreedyAlgorithm() {
+    const food = document.getElementById('greedyFoodInput').value;
+    const heuristic = document.getElementById('greedyHeuristicSelect').value;
+    
+    const res = await fetch('/api/algorithms/greedy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ available_food: food, heuristic: heuristic })
+    });
+    const data = await res.json();
+    const result = data.result;
+
+    document.getElementById('greedyAllocatedVal').innerText = result.food_allocated;
+    document.getElementById('greedyRemainingVal').innerText = result.remaining_food;
+    document.getElementById('greedyBenefitVal').innerText = result.total_priority_satisfied;
+
+    const tbody = document.querySelector('#greedyTraceTable tbody');
+    tbody.innerHTML = '';
+    result.step_by_step_trace.forEach(step => {
+        const isAcc = step.status.includes('ACCEPTED');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>#${step.step}</td>
+            <td><strong>${step.recipient}</strong></td>
+            <td>${step.quantity} pkts</td>
+            <td><span class="badge ${step.priority >= 8 ? 'badge-danger' : 'badge-warning'}">Pri ${step.priority}</span></td>
+            <td><span class="badge ${isAcc ? 'badge-success' : 'badge-danger'}">${step.status}</span></td>
+            <td><strong>${step.remaining_after_step}</strong></td>
+            <td><small>${step.reason}</small></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('greedyResultContainer').style.display = 'block';
+    showToast(`Greedy allocation completed! Allocated ${result.food_allocated} packets.`);
+}
+
+async function runDPAlgorithm() {
+    const cap = document.getElementById('dpCapacityInput').value;
+    const res = await fetch('/api/algorithms/dp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ capacity: cap })
+    });
+    const data = await res.json();
+    const result = data.result;
+
+    document.getElementById('dpBenefitVal').innerText = result.max_benefit;
+    document.getElementById('dpUsedVal').innerText = `${result.total_food_used} / ${result.capacity}`;
+    document.getElementById('dpSelectedCountVal').innerText = `${result.selected_count} / ${result.total_requests}`;
+
+    // Selected table
+    const tbody = document.querySelector('#dpSelectedTable tbody');
+    tbody.innerHTML = '';
+    result.selected_requests.forEach(req => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>#${req.request_id}</td>
+            <td><strong>${req.recipient_name}</strong></td>
+            <td><span class="badge badge-info">${req.food_category}</span></td>
+            <td><strong>${req.quantity_requested} packets</strong></td>
+            <td><span class="badge badge-success">Priority ${req.priority}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // DP Matrix
+    const matrix = result.dp_matrix_visualization;
+    const mTable = document.getElementById('dpMatrixTable');
+    let mHtml = '<thead><tr>';
+    matrix.headers.forEach(h => { mHtml += `<th>${h}</th>`; });
+    mHtml += '</tr></thead><tbody>';
+
+    matrix.rows.forEach(r => {
+        mHtml += `<tr class="${r.is_selected ? 'highlight-cell' : ''}">`;
+        mHtml += `<td style="text-align:left; font-weight:bold;">${r.label}</td>`;
+        r.values.forEach(v => { mHtml += `<td>${v}</td>`; });
+        mHtml += '</tr>';
+    });
+    mHtml += '</tbody>';
+    mTable.innerHTML = mHtml;
+
+    document.getElementById('dpResultContainer').style.display = 'block';
+    showToast(`DP 0/1 Knapsack optimal score computed: ${result.max_benefit}!`);
+}
+
+async function runBacktrackingAlgorithm() {
+    const res = await fetch('/api/algorithms/backtracking', { method: 'POST' });
+    const data = await res.json();
+    const result = data.result;
+
+    document.getElementById('btBacktracksVal').innerText = result.total_backtracks;
+    document.getElementById('btStepsVal').innerText = result.total_steps;
+
+    // Assignment Table
+    const tbodyA = document.querySelector('#btAssignmentTable tbody');
+    tbodyA.innerHTML = '';
+    result.final_assignment.forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${a.donor_name}</strong></td>
+            <td>${a.quantity} packets</td>
+            <td><span class="badge badge-success">${a.assigned_center}</span></td>
+        `;
+        tbodyA.appendChild(tr);
+    });
+
+    // Trace Table
+    const tbodyT = document.querySelector('#btTraceTable tbody');
+    tbodyT.innerHTML = '';
+    result.trace_steps.forEach(st => {
+        const isUndo = st.action.includes('BACKTRACK') || st.action.includes('PRUNE');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>#${st.step}</td>
+            <td><strong>${st.action}</strong></td>
+            <td>${st.donor || '-'}</td>
+            <td>${st.center || '-'}</td>
+            <td><span class="badge ${isUndo ? 'badge-danger' : 'badge-success'}">${st.status || '-'}</span></td>
+            <td><small>${st.description}</small></td>
+        `;
+        tbodyT.appendChild(tr);
+    });
+
+    document.getElementById('btResultContainer').style.display = 'block';
+    showToast(`Backtracking completed with ${result.total_backtracks} backtrack branches!`);
+}
+</script>
+{% endblock %}
