@@ -229,7 +229,7 @@ async function processNextQueueRequest() {
         const res = await fetch('/api/requests/process', { method: 'POST' });
         const result = await res.json();
         if (res.ok) {
-            showToast(`FIFO Dequeued: Request #${result.processed_item.request_id} for ${result.processed_item.recipient_name}!`);
+            showToast(`Request #${result.processed_item.request_id} fulfilled for ${result.processed_item.recipient_name}!`);
             setTimeout(() => window.location.reload(), 900);
         } else {
             showToast(result.message, 'error');

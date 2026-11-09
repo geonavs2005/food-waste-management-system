@@ -1,56 +1,39 @@
 {% extends "base.html" %}
 
-{% block header_title %}Location Network & Graph Algorithms{% endblock %}
-{% block header_subtitle %}Custom Adjacency List Graph representation with interactive BFS and DFS traversals{% endblock %}
+{% block header_title %}Distribution Hubs & Route Map{% endblock %}
+{% block header_subtitle %}Logistics network and delivery route connections between collection centers and shelters{% endblock %}
 
 {% block content %}
-
-<!-- DSA Educational Box -->
-<div class="dsa-info-box">
-    <div class="dsa-info-header">
-        <div class="dsa-info-title"><i class="fa-solid fa-network-wired"></i> Data Structure: Graph (Adjacency List)</div>
-        <span class="complexity-pill">BFS: O(V + E) | DFS: O(V + E) | Shortest Path: O(V^2 / E log V)</span>
-    </div>
-    <div class="dsa-info-body">
-        <strong>What is it?</strong> A non-linear data structure consisting of vertices $V$ (Locations: Donor Kitchens, Food Banks, Shelters) and edges $E$ (Logistics transport routes with kilometer weights).<br>
-        <strong>Why are we using it?</strong> Models the real-world physical supply chain route map for food transport vehicles.<br>
-        <strong>Traversals:</strong>
-        <ul style="margin-left: 20px; margin-top: 4px;">
-            <li><strong>BFS (Breadth-First Search):</strong> Explores all immediate neighbor hubs level-by-level using our FIFO Queue.</li>
-            <li><strong>DFS (Depth-First Search):</strong> Explores transport paths deeply along each route before backtracking.</li>
-        </ul>
-    </div>
-</div>
 
 <!-- Graph Controls & Visualizer Canvas -->
 <div class="card">
     <div class="card-header">
         <div class="card-title">
-            <i class="fa-solid fa-circle-nodes" style="color: var(--primary);"></i> Interactive Food Supply Network Graph
+            <i class="fa-solid fa-circle-nodes" style="color: var(--primary);"></i> Interactive Food Supply Route Map
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button class="btn btn-outline btn-sm" onclick="openModal('addLocationModal')">
-                <i class="fa-solid fa-plus"></i> Add Hub Vertex
+                <i class="fa-solid fa-plus"></i> Add Distribution Hub
             </button>
             <button class="btn btn-outline btn-sm" onclick="openModal('addConnectionModal')">
-                <i class="fa-solid fa-link"></i> Connect Hubs (Edge)
+                <i class="fa-solid fa-link"></i> Connect Hubs (Route)
             </button>
         </div>
     </div>
     <div class="card-body">
         <!-- Interactive Traversal Action Bar -->
         <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <div style="font-weight: 600; font-size: 0.85rem;">Run Traversal from:</div>
+            <div style="font-weight: 600; font-size: 0.85rem;">Explore Route from:</div>
             <select id="startNodeSelect" class="form-control" style="width: auto; min-width: 180px;">
                 {% for v in vertices %}
                 <option value="{{ v.name }}">{{ v.name }} ({{ v.type }})</option>
                 {% endfor %}
             </select>
             <button class="btn btn-primary btn-sm" onclick="triggerBFS()">
-                <i class="fa-solid fa-play"></i> Run BFS (Queue Level-Order)
+                <i class="fa-solid fa-play"></i> Explore Nearest Hubs
             </button>
             <button class="btn btn-secondary btn-sm" onclick="triggerDFS()">
-                <i class="fa-solid fa-route"></i> Run DFS (Deep Branch)
+                <i class="fa-solid fa-route"></i> Trace Route Path
             </button>
         </div>
 
@@ -71,14 +54,14 @@
     <!-- Adjacency List Table -->
     <div class="card">
         <div class="card-header">
-            <div class="card-title"><i class="fa-solid fa-list-check"></i> Graph Adjacency List (Internal Memory)</div>
+            <div class="card-title"><i class="fa-solid fa-list-check"></i> Connected Network Hubs & Distances</div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Location Vertex (V)</th>
+                            <th>Distribution Hub</th>
                             <th>Type</th>
                             <th>Connected Neighbors & Distances</th>
                         </tr>
@@ -141,7 +124,7 @@
 <div class="modal-overlay" id="addLocationModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Add Location Hub Vertex</h3>
+            <h3>Add Distribution Hub</h3>
             <button class="modal-close" onclick="closeModal('addLocationModal')">&times;</button>
         </div>
         <form id="addLocationForm">
@@ -151,7 +134,7 @@
                     <input type="text" name="name" class="form-control" placeholder="e.g. Mylapore Collection Center" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Node Category *</label>
+                    <label class="form-label">Category *</label>
                     <select name="type" class="form-control">
                         <option value="Donor Hub">Donor Hub</option>
                         <option value="Collection Center">Collection Center</option>
@@ -162,7 +145,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('addLocationModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Vertex</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Hub</button>
             </div>
         </form>
     </div>
@@ -172,7 +155,7 @@
 <div class="modal-overlay" id="addConnectionModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Add Route Connection (Edge)</h3>
+            <h3>Add Route Connection</h3>
             <button class="modal-close" onclick="closeModal('addConnectionModal')">&times;</button>
         </div>
         <form id="addConnectionForm">

@@ -1,80 +1,34 @@
 {% extends "base.html" %}
 
-{% block header_title %}Request Management & FIFO Queue{% endblock %}
-{% block header_subtitle %}Custom FIFO RequestQueue using Linked List (Front -> ... -> Rear){% endblock %}
+{% block header_title %}Food Request Management{% endblock %}
+{% block header_subtitle %}Track shelter requests, monitor urgency levels, and distribute surplus batches{% endblock %}
 
 {% block content %}
 
-<!-- DSA Educational Card -->
-<div class="dsa-info-box">
-    <div class="dsa-info-header">
-        <div class="dsa-info-title"><i class="fa-solid fa-arrows-split-up-and-left"></i> Data Structure: FIFO Queue</div>
-        <span class="complexity-pill">Enqueue: O(1) | Dequeue: O(1) | Peek: O(1)</span>
+<!-- Action Header & Buttons -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+    <div>
+        <span class="badge badge-warning" style="font-size: 0.88rem; padding: 6px 12px;">
+            <i class="fa-solid fa-clock-rotate-left"></i> {{ pending_requests | length }} Requests Awaiting Fulfillment
+        </span>
     </div>
-    <div class="dsa-info-body">
-        <strong>What is it?</strong> A First-In-First-Out (FIFO) linear data structure where elements are inserted at the <code>rear</code> and removed from the <code>front</code>.<br>
-        <strong>Why are we using it?</strong> Guarantees fair, corruption-free sequential processing of surplus food requests based on exact chronological submission time.<br>
-        <strong>How does it work here?</strong> Clicking <strong>"Process Next Request"</strong> executes <code>dequeue()</code> on our custom <code>RequestQueue</code>, serving the front item and advancing the front pointer in O(1) time.
+    <div style="display: flex; gap: 10px;">
+        <button class="btn btn-primary" onclick="processNextQueueRequest()">
+            <i class="fa-solid fa-forward-step"></i> Distribute Next Request
+        </button>
+        <button class="btn btn-secondary" onclick="openModal('createRequestModal')">
+            <i class="fa-solid fa-plus"></i> Submit New Request
+        </button>
     </div>
 </div>
 
-<!-- Live FIFO Queue Visualizer -->
-<div class="card">
+<!-- Primary Food Requests Table -->
+<div class="card" style="margin-bottom: 24px;">
     <div class="card-header">
         <div class="card-title">
-            <i class="fa-solid fa-train" style="color: var(--secondary);"></i> Live FIFO Processing Queue (Pending Items: {{ queue_size }})
+            <i class="fa-solid fa-table-list" style="color: var(--primary);"></i> Food Requests Directory
         </div>
-        <div>
-            <button class="btn btn-primary btn-sm" onclick="processNextQueueRequest()">
-                <i class="fa-solid fa-forward-step"></i> Process Next Request (FIFO Dequeue)
-            </button>
-            <button class="btn btn-outline btn-sm" onclick="openModal('createRequestModal')">
-                <i class="fa-solid fa-plus"></i> Enqueue Request
-            </button>
-        </div>
-    </div>
-    <div class="card-body">
-        <div class="queue-train">
-            <div style="font-weight: 800; color: #059669; font-family: monospace; padding: 10px;">
-                FRONT (Next to Serve) ➔
-            </div>
-            {% if queue_list %}
-                {% for item in queue_list %}
-                <div class="queue-card {% if loop.first %}front-item{% endif %}">
-                    <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">
-                        Queue Pos: #{{ item.queue_position }}
-                    </div>
-                    <div style="font-weight: 700; margin: 4px 0;">{{ item.recipient_name }}</div>
-                    <div style="font-size: 0.82rem; color: var(--secondary-dark);">
-                        <strong>{{ item.quantity_requested }} pkts</strong> ({{ item.food_category }})
-                    </div>
-                    <div style="margin-top: 6px;">
-                        <span class="badge {% if item.priority >= 9 %}badge-danger{% elif item.priority >= 7 %}badge-warning{% else %}badge-secondary{% endif %}">
-                            Pri {{ item.priority }}/10
-                        </span>
-                    </div>
-                </div>
-                {% if not loop.last %}<div style="color: #94a3b8; font-weight: bold;">←</div>{% endif %}
-                {% endfor %}
-            {% else %}
-                <div style="padding: 20px; color: #94a3b8; font-style: italic;">
-                    Queue is currently empty. No pending requests.
-                </div>
-            {% endif %}
-            <div style="font-weight: 800; color: #64748b; font-family: monospace; padding: 10px;">
-                ➔ REAR (Newest Arrival)
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- All Requests Table -->
-<div class="card">
-    <div class="card-header">
-        <div class="card-title"><i class="fa-solid fa-table-list"></i> All Food Requests History</div>
-        <button class="btn btn-secondary btn-sm" onclick="openModal('createRequestModal')">
-            <i class="fa-solid fa-plus"></i> Create New Request
-        </button>
+        <span class="badge badge-info">Active Requests</span>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -83,12 +37,12 @@
                     <tr>
                         <th>Req ID</th>
                         <th>Recipient Shelter</th>
-                        <th>Category Requested</th>
-                        <th>Quantity</th>
-                        <th>Urgency / Priority</th>
-                        <th>Request Date</th>
+                        <th>Category</th>
+                        <th>Quantity Needed</th>
+                        <th>Urgency Level</th>
+                        <th>Date Submitted</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -98,20 +52,24 @@
                             <td><strong>#{{ req.request_id }}</strong></td>
                             <td><strong>{{ req.recipient_name }}</strong></td>
                             <td><span class="badge badge-info">{{ req.food_category }}</span></td>
-                            <td>{{ req.quantity_requested }} packets</td>
+                            <td><strong>{{ req.quantity_requested }}</strong> packets</td>
                             <td>
                                 <span class="badge {% if req.priority >= 9 %}badge-danger{% elif req.priority >= 7 %}badge-warning{% else %}badge-secondary{% endif %}">
-                                    Level {{ req.priority }}/10
+                                    Urgency {{ req.priority }}/10
                                 </span>
                             </td>
                             <td><small class="text-muted">{{ req.request_date }}</small></td>
                             <td>
-                                <span class="badge {% if req.status == 'Pending' %}badge-warning{% elif req.status == 'Processed' %}badge-success{% else %}badge-secondary{% endif %}">
-                                    {{ req.status }}
-                                </span>
+                                {% if req.status == 'Pending' %}
+                                <span class="badge badge-warning">Pending (In Queue)</span>
+                                {% elif req.status == 'Processed' %}
+                                <span class="badge badge-success">Fulfilled & Distributed</span>
+                                {% else %}
+                                <span class="badge badge-secondary">{{ req.status }}</span>
+                                {% endif %}
                             </td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteRequestItem({{ req.request_id }})">
+                                <button class="btn btn-danger btn-sm" onclick="deleteRequestItem({{ req.request_id }})" title="Delete request">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </td>
@@ -119,7 +77,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="8" style="text-align: center; color: #94a3b8;">No requests submitted yet.</td>
+                            <td colspan="8" style="text-align: center; color: #94a3b8; padding: 24px;">No requests submitted yet. Click "Submit New Request" above.</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -132,7 +90,7 @@
 <div class="modal-overlay" id="createRequestModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Enqueue Food Request</h3>
+            <h3>Submit Food Request</h3>
             <button class="modal-close" onclick="closeModal('createRequestModal')">&times;</button>
         </div>
         <form id="createRequestForm">
@@ -140,7 +98,7 @@
                 <div class="form-group">
                     <label class="form-label">Recipient Shelter *</label>
                     <select name="recipient_id" class="form-control" required>
-                        <option value="">-- Select Recipient --</option>
+                        <option value="">-- Select Recipient Shelter --</option>
                         {% for r in recipients %}
                         <option value="{{ r.recipient_id }}">{{ r.name }} ({{ r.organization }})</option>
                         {% endfor %}
@@ -150,26 +108,27 @@
                     <div class="form-group">
                         <label class="form-label">Food Category *</label>
                         <select name="food_category" class="form-control" required>
-                            <option value="Meals">Meals</option>
+                            <option value="Meals">Cooked Meals</option>
                             <option value="Bread">Bread & Bakery</option>
-                            <option value="Breakfast">Breakfast</option>
-                            <option value="Fruits">Fruits</option>
+                            <option value="Breakfast">Breakfast & Tiffin</option>
+                            <option value="Fruits">Fresh Fruits</option>
                             <option value="Snacks">Snacks</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Quantity Needed *</label>
+                        <label class="form-label">Quantity Needed (Packets) *</label>
                         <input type="number" name="quantity_requested" class="form-control" min="1" placeholder="e.g. 30" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Priority / Urgency (1 - 10) *</label>
+                    <label class="form-label">Priority / Urgency (1 to 10) *</label>
                     <input type="number" name="priority" class="form-control" min="1" max="10" value="7" required>
+                    <small style="color: #64748b; font-size: 0.75rem;">Higher urgency items are highlighted and prioritized by redistribution algorithms.</small>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('createRequestModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Enqueue at Rear (FIFO)</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Submit Request</button>
             </div>
         </form>
     </div>
@@ -180,7 +139,7 @@
 {% block scripts %}
 <script>
 async function deleteRequestItem(reqId) {
-    if (!confirm(`Delete Request #${reqId}?`)) return;
+    if (!confirm(`Are you sure you want to delete Request #${reqId}?`)) return;
     const res = await fetch(`/api/requests/${reqId}`, { method: 'DELETE' });
     const result = await res.json();
     if (res.ok) {

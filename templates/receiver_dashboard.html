@@ -19,7 +19,7 @@
                 Urgency Priority: Level {{ recipient.priority if recipient else 8 }}/10
             </span>
             <button class="btn btn-primary" onclick="openModal('addReceiverRequestModal')">
-                <i class="fa-solid fa-cart-plus"></i> Request Food (FIFO Queue)
+                <i class="fa-solid fa-cart-plus"></i> Request Surplus Food
             </button>
         </div>
     </div>
@@ -38,7 +38,7 @@
         <div class="stat-icon-wrapper stat-icon-rose"><i class="fa-solid fa-clock-rotate-left"></i></div>
         <div class="stat-info">
             <div class="stat-value">{{ pending_count }}</div>
-            <div class="stat-label">Waiting in FIFO Queue</div>
+            <div class="stat-label">Pending Requests</div>
         </div>
     </div>
     <div class="stat-card">
@@ -54,7 +54,7 @@
 <div class="card">
     <div class="card-header">
         <div class="card-title">
-            <i class="fa-solid fa-arrows-split-up-and-left" style="color: var(--secondary);"></i> My Food Requests Status (FIFO Processing)
+            <i class="fa-solid fa-clipboard-check" style="color: var(--secondary);"></i> My Food Requests Status
         </div>
         <button class="btn btn-secondary btn-sm" onclick="openModal('addReceiverRequestModal')">
             <i class="fa-solid fa-plus"></i> Submit New Request

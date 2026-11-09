@@ -141,6 +141,7 @@ class TestDSAImplementations(unittest.TestCase):
 class TestFlaskEndpoints(unittest.TestCase):
     def setUp(self):
         self.app = create_app()
+        self.app.config['TESTING'] = True
         self.client = self.app.test_client()
 
     def test_pages_load(self):

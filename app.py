@@ -39,14 +39,25 @@ def create_app():
     app.register_blueprint(algorithm_bp)
 
     @app.before_request
-    def set_default_session():
-        from flask import session
-        if 'role' not in session:
-            # Default to admin role for direct viva inspection if user hasn't logged out
-            session['role'] = 'admin'
-            session['username'] = 'admin'
-            session['name'] = 'System Administrator'
-            session['user_id'] = 1
+    def enforce_authentication():
+        from flask import session, request, redirect, url_for
+        # Allow testing environment to use mock admin session
+        if app.config.get('TESTING'):
+            if 'user_id' not in session:
+                session['role'] = 'admin'
+                session['username'] = 'admin'
+                session['name'] = 'System Administrator'
+                session['user_id'] = 1
+            return
+
+        # Public endpoints that do not require login
+        public_endpoints = {'auth_bp.login_page', 'auth_bp.register_page', 'static'}
+        if request.endpoint in public_endpoints or (request.path and request.path.startswith('/static')):
+            return
+
+        # If not logged in, redirect to login page
+        if 'user_id' not in session:
+            return redirect(url_for('auth_bp.login_page'))
 
     @app.route('/')
     def dashboard():

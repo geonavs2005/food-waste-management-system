@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Role Login | Food Waste Management System</title>
+    <title>Sign In | Food Waste Management System</title>
+    <!-- Modern Font and FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
@@ -13,205 +14,342 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 24px 16px;
+            margin: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
         }
-        .login-wrapper {
+
+        .login-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 440px;
+            animation: fadeIn 0.4s ease;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .login-card {
             background: #ffffff;
-            border-radius: var(--border-radius-lg);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.35), 0 10px 15px -5px rgba(0, 0, 0, 0.2);
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
-        .login-header {
-            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+
+        .login-top {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             color: #ffffff;
-            padding: 26px 20px;
+            padding: 32px 24px 26px;
             text-align: center;
         }
-        .role-switch-container {
-            display: flex;
-            background: #f1f5f9;
-            padding: 5px;
-            margin: 18px 20px 10px;
-            border-radius: var(--border-radius-sm);
-            gap: 4px;
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            font-size: 28px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-        .role-btn {
-            flex: 1;
-            padding: 9px 6px;
-            border: none;
-            background: transparent;
-            font-size: 0.82rem;
+
+        .login-title {
+            font-size: 1.45rem;
             font-weight: 700;
-            color: #64748b;
-            border-radius: var(--border-radius-sm);
+            margin: 0 0 6px 0;
+            letter-spacing: -0.3px;
+        }
+
+        .login-subtitle {
+            font-size: 0.86rem;
+            color: #e2e8f0;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .login-body {
+            padding: 28px 24px 24px;
+        }
+
+        .form-label {
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .input-group i.input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #10b981;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
             cursor: pointer;
-            transition: var(--transition);
+            font-size: 0.9rem;
+            padding: 4px;
+        }
+
+        .toggle-password:hover {
+            color: #475569;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(16, 185, 129, 0.35);
+        }
+
+        .quick-demo-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .quick-demo-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
             gap: 6px;
         }
-        .role-btn.active {
-            background: #ffffff;
-            color: var(--primary-dark);
-            box-shadow: var(--shadow-sm);
+
+        .demo-chips {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        .demo-pill-box {
-            background: #f8fafc;
-            border: 1px dashed var(--border-color);
-            padding: 10px 14px;
-            border-radius: var(--border-radius-sm);
-            margin: 12px 20px 16px;
-            font-size: 0.8rem;
-            color: #475569;
-        }
-        .demo-btn {
-            display: inline-block;
-            background: #e2e8f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 600;
+
+        .demo-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 9px 12px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 4px;
-            font-size: 0.74rem;
-            color: #0f172a;
-            transition: var(--transition);
+            transition: all 0.2s ease;
+            font-size: 0.84rem;
+            color: #1e293b;
         }
-        .demo-btn:hover { background: #cbd5e1; }
+
+        .demo-chip:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            transform: translateX(3px);
+        }
+
+        .demo-chip-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .demo-chip-role {
+            font-size: 0.72rem;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .role-admin { background: #fee2e2; color: #991b1b; }
+        .role-donor { background: #d1fae5; color: #065f46; }
+        .role-receiver { background: #dbeafe; color: #1e40af; }
+
+        .register-link-box {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.88rem;
+            color: #64748b;
+        }
+
+        .register-link-box a {
+            color: #059669;
+            font-weight: 700;
+            text-decoration: none;
+            margin-left: 4px;
+        }
+
+        .register-link-box a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
-<div class="login-wrapper">
+<div class="login-container">
     <div class="login-card">
-        <div class="login-header">
-            <div style="font-size: 2.2rem; margin-bottom: 4px;"><i class="fa-solid fa-seedling"></i></div>
-            <h2 style="font-size: 1.3rem; font-weight: 700;">Food Waste Management System</h2>
-            <p style="font-size: 0.82rem; opacity: 0.9; margin-top: 2px;">Role-Based Authentication (MCA DSA Project)</p>
+        <!-- Header -->
+        <div class="login-top">
+            <div class="brand-badge">
+                <i class="fa-solid fa-seedling"></i>
+            </div>
+            <h1 class="login-title">Food Rescue System</h1>
+            <p class="login-subtitle">Sign in to manage surplus food & requests</p>
         </div>
 
-        <!-- Role Toggle: Admin vs Donor vs Receiver -->
-        <div class="role-switch-container">
-            <button class="role-btn active" id="btnAdminRole" onclick="switchRole('admin')">
-                <i class="fa-solid fa-shield-halved"></i> Admin
-            </button>
-            <button class="role-btn" id="btnDonorRole" onclick="switchRole('donor')">
-                <i class="fa-solid fa-hand-holding-heart"></i> Food Donor
-            </button>
-            <button class="role-btn" id="btnReceiverRole" onclick="switchRole('receiver')">
-                <i class="fa-solid fa-users"></i> Receiver / Shelter
-            </button>
-        </div>
-
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div style="padding: 0 20px; margin-top: 10px;">
+        <!-- Body Form -->
+        <div class="login-body">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
                     {% for category, message in messages %}
-                    <div class="alert-banner alert-{{ category if category != 'error' else 'danger' }}" style="padding: 8px 12px; font-size: 0.82rem; margin-bottom: 6px;">
-                        {{ message }}
+                    <div class="alert-banner alert-{{ category if category != 'error' else 'danger' }}" style="margin-bottom: 16px; padding: 10px 14px; font-size: 0.85rem; border-radius: 8px;">
+                        <i class="fa-solid fa-circle-info"></i> {{ message }}
                     </div>
                     {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+                {% endif %}
+            {% endwith %}
 
-        <!-- Viva 1-Click Quick Demo Login Helper -->
-        <div class="demo-pill-box">
-            <div><i class="fa-solid fa-lightbulb" style="color: var(--accent);"></i> <strong>Viva 1-Click Demo Fill:</strong></div>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-                <span class="demo-btn" onclick="fillDemo('admin', 'admin', 'admin123')">
-                    <i class="fa-solid fa-user-shield"></i> Admin (admin / admin123)
-                </span>
-                <span class="demo-btn" onclick="fillDemo('donor', 'ramesh', 'donor123')">
-                    <i class="fa-solid fa-store"></i> Donor (ramesh / donor123)
-                </span>
-                <span class="demo-btn" onclick="fillDemo('receiver', 'thomas', 'receiver123')">
-                    <i class="fa-solid fa-house-chimney-user"></i> Receiver (thomas / receiver123)
-                </span>
+            <form method="POST" action="{{ url_for('auth_bp.login_page') }}" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="usernameInput">Username</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" name="username" id="usernameInput" placeholder="Enter your username" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="passwordInput">Password</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" name="password" id="passwordInput" placeholder="Enter your password" required>
+                        <i class="fa-solid fa-eye toggle-password" id="eyeIcon" onclick="togglePasswordVisibility()"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+                </button>
+            </form>
+
+            <!-- 1-Click Fast Demo Login for Quick Viva / Testing -->
+            <div class="quick-demo-section">
+                <div class="quick-demo-title">
+                    <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> 1-Click Quick Demo Sign In
+                </div>
+                <div class="demo-chips">
+                    <div class="demo-chip" onclick="quickLogin('admin', 'admin123')">
+                        <div class="demo-chip-left">
+                            <i class="fa-solid fa-shield-halved" style="color: #ef4444;"></i>
+                            <span>Admin Portal</span>
+                        </div>
+                        <span class="demo-chip-role role-admin">Administrator</span>
+                    </div>
+
+                    <div class="demo-chip" onclick="quickLogin('ramesh', 'donor123')">
+                        <div class="demo-chip-left">
+                            <i class="fa-solid fa-hand-holding-heart" style="color: #10b981;"></i>
+                            <span>Ramesh (Annapoorna)</span>
+                        </div>
+                        <span class="demo-chip-role role-donor">Food Donor</span>
+                    </div>
+
+                    <div class="demo-chip" onclick="quickLogin('thomas', 'receiver123')">
+                        <div class="demo-chip-left">
+                            <i class="fa-solid fa-house-chimney-user" style="color: #3b82f6;"></i>
+                            <span>Father Thomas (Shelter)</span>
+                        </div>
+                        <span class="demo-chip-role role-receiver">Shelter Receiver</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration Link -->
+            <div class="register-link-box">
+                <span>Don't have an account?</span>
+                <a href="{{ url_for('auth_bp.register_page') }}">Register here</a>
             </div>
         </div>
-
-        <form method="POST" action="{{ url_for('auth_bp.login_page') }}" style="padding: 0 20px 24px;">
-            <input type="hidden" name="role" id="selectedRoleInput" value="admin">
-
-            <div class="form-group">
-                <label class="form-label" id="usernameLabel">Admin Username</label>
-                <div style="position: relative;">
-                    <input type="text" name="username" id="usernameInput" class="form-control" placeholder="Enter username" required value="admin">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <div style="position: relative;">
-                    <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter password" required value="admin123">
-                </div>
-            </div>
-
-            <div style="margin-top: 18px;">
-                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px;">
-                    <i class="fa-solid fa-arrow-right-to-bracket"></i> <span id="loginBtnText">Sign In as Administrator</span>
-                </button>
-            </div>
-
-            <div style="margin-top: 16px; text-align: center; font-size: 0.85rem; color: #64748b;">
-                <span>Need a new account?</span>
-                <a href="{{ url_for('auth_bp.register_page') }}" style="color: var(--primary-dark); font-weight: 700; text-decoration: none; margin-left: 4px;">
-                    Register as Donor / Receiver
-                </a>
-            </div>
-        </form>
     </div>
 </div>
 
 <script>
-function switchRole(role) {
-    const btnAdmin = document.getElementById('btnAdminRole');
-    const btnDonor = document.getElementById('btnDonorRole');
-    const btnReceiver = document.getElementById('btnReceiverRole');
-    const roleInput = document.getElementById('selectedRoleInput');
-    const userLabel = document.getElementById('usernameLabel');
-    const btnText = document.getElementById('loginBtnText');
-    const uInput = document.getElementById('usernameInput');
-    const pInput = document.getElementById('passwordInput');
-
-    roleInput.value = role;
-
-    btnAdmin.classList.remove('active');
-    btnDonor.classList.remove('active');
-    btnReceiver.classList.remove('active');
-
-    if (role === 'admin') {
-        btnAdmin.classList.add('active');
-        userLabel.innerText = 'Admin Username';
-        btnText.innerText = 'Sign In as Administrator';
-        uInput.value = 'admin';
-        pInput.value = 'admin123';
-    } else if (role === 'donor') {
-        btnDonor.classList.add('active');
-        userLabel.innerText = 'Donor Username';
-        btnText.innerText = 'Sign In as Food Donor';
-        uInput.value = 'ramesh';
-        pInput.value = 'donor123';
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('passwordInput');
+    const eyeIcon = document.getElementById('eyeIcon');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
     } else {
-        btnReceiver.classList.add('active');
-        userLabel.innerText = 'Receiver / Shelter Username';
-        btnText.innerText = 'Sign In as Receiver / Shelter';
-        uInput.value = 'thomas';
-        pInput.value = 'receiver123';
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
     }
 }
 
-function fillDemo(role, user, pass) {
-    switchRole(role);
-    document.getElementById('usernameInput').value = user;
-    document.getElementById('passwordInput').value = pass;
+function quickLogin(username, password) {
+    document.getElementById('usernameInput').value = username;
+    document.getElementById('passwordInput').value = password;
+    document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing In...';
+    document.getElementById('loginForm').submit();
 }
 </script>
 

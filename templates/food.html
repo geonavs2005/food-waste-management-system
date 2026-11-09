@@ -1,133 +1,47 @@
 {% extends "base.html" %}
 
-{% block header_title %}Food Inventory Management{% endblock %}
-{% block header_subtitle %}Custom Singly Linked List Data Structure (FoodNode -> FoodNode -> NULL){% endblock %}
+{% block header_title %}Food Inventory{% endblock %}
+{% block header_subtitle %}Manage surplus food batches, track shelf life, and manage allocations{% endblock %}
 
 {% block content %}
 
-<!-- DSA Educational Card -->
-<div class="dsa-info-box">
-    <div class="dsa-info-header">
-        <div class="dsa-info-title"><i class="fa-solid fa-link"></i> Data Structure: Singly Linked List</div>
-        <span class="complexity-pill">Insert: O(1) | Search: O(n) | Delete: O(n) | Traverse: O(n)</span>
-    </div>
-    <div class="dsa-info-body">
-        <strong>What is it?</strong> A linear collection of data elements called <code>FoodNode</code> whose order is not given by their physical placement in memory; instead, each node points to the next node.<br>
-        <strong>Why are we using it?</strong> Allows efficient dynamic insertions and deletions of surplus food batches without requiring contiguous block memory reallocation.<br>
-        <strong>How does it work here?</strong> Food items loaded from MySQL are instantiated into <code>FoodNode</code> objects linked sequentially (<code>head -> node1 -> node2 -> ... -> NULL</code>).
-    </div>
-</div>
-
-<!-- Linked List Visualizer Card -->
-<div class="card">
-    <div class="card-header">
-        <div class="card-title">
-            <i class="fa-solid fa-code-commit" style="color: var(--primary);"></i> Live Linked List Memory Representation (Size: {{ list_size }})
-        </div>
-        <button class="btn btn-outline btn-sm" onclick="runLinkedListTraverse()">
-            <i class="fa-solid fa-arrows-spin"></i> Step Traverse
-        </button>
-    </div>
-    <div class="card-body">
-        <div class="ll-container" id="linkedListVisualContainer">
-            <div style="font-weight: 800; color: #475569; font-family: monospace; padding: 10px;">HEAD →</div>
-            {% if visual_chain %}
-                {% for node in visual_chain %}
-                <div class="ll-node" id="ll-node-{{ node.food_id }}">
-                    <div class="ll-node-id">Node #{{ node.food_id }}</div>
-                    <div class="ll-node-name">{{ node.food_name }}</div>
-                    <div class="ll-node-qty">{{ node.quantity }} pkts</div>
-                    <div style="font-size: 0.72rem; color: var(--text-muted);">next: {% if node.next_id %}#{{ node.next_id }}{% else %}NULL{% endif %}</div>
-                </div>
-                <div class="ll-arrow">➔</div>
-                {% endfor %}
-            {% endif %}
-            <div class="ll-null">NULL</div>
+<!-- Action Header & Quick Stats -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+    <div style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 480px;">
+        <div style="position: relative; width: 100%;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+            <input type="text" id="quickTableSearch" class="form-control" placeholder="Quick search food name, category, or donor..." style="padding-left: 36px;" onkeyup="filterFoodTable()">
         </div>
     </div>
-</div>
-
-<!-- Search & Sort DSA Action Panel -->
-<div class="card">
-    <div class="card-header">
-        <div class="card-title"><i class="fa-solid fa-magnifying-glass"></i> Searching & Sorting Demonstrator on Food Records</div>
-    </div>
-    <div class="card-body">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            <!-- Linear Search Card -->
-            <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--primary-dark);">
-                    <i class="fa-solid fa-list-ol"></i> Linear Search (Unsorted O(n))
-                </h4>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
-                    Inspects food elements one-by-one from head to tail.
-                </p>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="linearSearchInput" class="form-control" placeholder="e.g., Biryani, Rice, Bread">
-                    <button class="btn btn-primary btn-sm" onclick="runLinearSearch()">Search</button>
-                </div>
-                <div id="linearSearchResult" style="margin-top: 10px; font-size: 0.85rem;"></div>
-            </div>
-
-            <!-- Binary Search Card -->
-            <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--secondary-dark);">
-                    <i class="fa-solid fa-divide"></i> Binary Search (Sorted O(log n))
-                </h4>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
-                    Auto-sorts by Quantity via Merge Sort first, then halves search space.
-                </p>
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" id="binarySearchInput" class="form-control" placeholder="Quantity (e.g. 45, 60)">
-                    <button class="btn btn-secondary btn-sm" onclick="runBinarySearch()">Search</button>
-                </div>
-                <div id="binarySearchResult" style="margin-top: 10px; font-size: 0.85rem;"></div>
-            </div>
-
-            <!-- Merge Sort Card -->
-            <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--info);">
-                    <i class="fa-solid fa-arrow-down-short-wide"></i> Merge Sort (O(n log n))
-                </h4>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
-                    Custom Divide-and-Conquer sort on inventory.
-                </p>
-                <div style="display: flex; gap: 8px;">
-                    <select id="sortFieldSelect" class="form-control">
-                        <option value="quantity">Sort by Quantity</option>
-                        <option value="food_id">Sort by Food ID</option>
-                        <option value="expiry_date">Sort by Expiry Date</option>
-                    </select>
-                    <button class="btn btn-outline btn-sm" onclick="runMergeSort()">Sort Now</button>
-                </div>
-                <div id="sortResultStats" style="margin-top: 10px; font-size: 0.85rem;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Food Inventory Table -->
-<div class="card">
-    <div class="card-header">
-        <div class="card-title"><i class="fa-solid fa-warehouse"></i> Stored Food Inventory Records</div>
-        <button class="btn btn-primary btn-sm" onclick="openModal('addFoodModal')">
+    <div style="display: flex; gap: 10px;">
+        <button class="btn btn-primary" onclick="openModal('addFoodModal')">
             <i class="fa-solid fa-plus"></i> Add New Food Batch
         </button>
+    </div>
+</div>
+
+<!-- Primary Food Inventory Table -->
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+        <div class="card-title">
+            <i class="fa-solid fa-warehouse" style="color: var(--primary);"></i> Available Surplus Food Batches ({{ foods | length }} Records)
+        </div>
+        <span class="badge badge-info">Real-Time Inventory</span>
     </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table" id="foodTable">
                 <thead>
                     <tr>
-                        <th>Food ID</th>
-                        <th>Food Name</th>
+                        <th>Batch ID</th>
+                        <th>Food Item</th>
                         <th>Category</th>
                         <th>Quantity</th>
                         <th>Expiry Date</th>
-                        <th>Donor</th>
-                        <th>Location</th>
+                        <th>Donor / Contributor</th>
+                        <th>Pickup Location</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -137,29 +51,33 @@
                             <td><strong>#{{ item.food_id }}</strong></td>
                             <td><strong>{{ item.food_name }}</strong></td>
                             <td><span class="badge badge-info">{{ item.category }}</span></td>
-                            <td>{{ item.quantity }} packets</td>
+                            <td><strong>{{ item.quantity }}</strong> packets</td>
                             <td>
                                 <span class="badge {% if item.expiry_date == today_str %}badge-danger{% else %}badge-secondary{% endif %}">
                                     {{ item.expiry_date }}
                                 </span>
                             </td>
                             <td>{{ item.donor_name or 'Independent Donor' }}</td>
-                            <td>{{ item.location }}</td>
+                            <td><i class="fa-solid fa-location-dot" style="color: #94a3b8; margin-right: 4px;"></i>{{ item.location }}</td>
                             <td>
-                                <span class="badge {% if item.status == 'Available' %}badge-success{% else %}badge-warning{% endif %}">
-                                    {{ item.status }}
-                                </span>
+                                {% if item.status == 'Available' %}
+                                <span class="badge badge-success">Available</span>
+                                {% elif item.status == 'Claimed' %}
+                                <span class="badge badge-warning">Reserved</span>
+                                {% else %}
+                                <span class="badge badge-secondary">{{ item.status }}</span>
+                                {% endif %}
                             </td>
                             <td>
-                                <button class="btn btn-danger btn-sm" onclick="deleteFoodItem({{ item.food_id }})">
-                                    <i class="fa-solid fa-trash"></i> Delete
+                                <button class="btn btn-danger btn-sm" onclick="deleteFoodItem({{ item.food_id }})" title="Delete food record">
+                                    <i class="fa-solid fa-trash"></i>
                                 </button>
                             </td>
                         </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="9" style="text-align: center; color: #94a3b8;">No food items in database. Add one above.</td>
+                            <td colspan="9" style="text-align: center; color: #94a3b8; padding: 24px;">No surplus food records registered yet. Click "Add New Food Batch" above.</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -179,22 +97,22 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Food Item Name *</label>
-                    <input type="text" name="food_name" class="form-control" placeholder="e.g. Vegetable Biryani, Curd Rice" required>
+                    <input type="text" name="food_name" class="form-control" placeholder="e.g. Vegetable Biryani, Bread & Jam" required>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Category *</label>
                         <select name="category" class="form-control" required>
-                            <option value="Meals">Meals</option>
+                            <option value="Meals">Cooked Meals</option>
                             <option value="Bread">Bread & Bakery</option>
-                            <option value="Breakfast">Breakfast</option>
-                            <option value="Fruits">Fruits & Produce</option>
-                            <option value="Snacks">Snacks</option>
+                            <option value="Breakfast">Breakfast & Tiffin</option>
+                            <option value="Fruits">Fresh Fruits & Produce</option>
+                            <option value="Snacks">Packaged Snacks</option>
                             <option value="Dairy">Dairy</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Quantity (Packets/Units) *</label>
+                        <label class="form-label">Quantity (Packets/Servings) *</label>
                         <input type="number" name="quantity" class="form-control" min="1" placeholder="e.g. 50" required>
                     </div>
                 </div>
@@ -204,7 +122,7 @@
                         <input type="date" name="expiry_date" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Donor *</label>
+                        <label class="form-label">Contributor / Donor *</label>
                         <select name="donor_id" class="form-control">
                             <option value="">-- Select Donor --</option>
                             {% for d in donors %}
@@ -220,7 +138,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('addFoodModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add to Linked List & DB</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Save Food Batch</button>
             </div>
         </form>
     </div>
@@ -230,6 +148,16 @@
 
 {% block scripts %}
 <script>
+// Filter table rows in real-time
+function filterFoodTable() {
+    const input = document.getElementById('quickTableSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('#foodTable tbody tr');
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
+    });
+}
+
 // Search & Sort API Runners
 async function runLinearSearch() {
     const query = document.getElementById('linearSearchInput').value;
@@ -243,15 +171,11 @@ async function runLinearSearch() {
     const data = await res.json();
     const resultDiv = document.getElementById('linearSearchResult');
     if (data.result.found) {
-        resultDiv.innerHTML = `<div class="badge badge-success">Found ${data.result.matches.length} item(s)!</div> 
-                               <div style="margin-top:4px; font-size:0.8rem; color:#475569;">
-                               Comparisons: <strong>${data.result.comparisons_count}</strong> out of ${data.result.total_elements} records.
-                               </div>`;
+        resultDiv.innerHTML = `<span class="badge badge-success">Found ${data.result.matches.length} item(s)!</span> 
+                               <span style="color:#475569; margin-left:6px;">Comparisons: <strong>${data.result.comparisons_count}</strong></span>`;
     } else {
-        resultDiv.innerHTML = `<div class="badge badge-danger">Not Found</div> 
-                               <div style="margin-top:4px; font-size:0.8rem; color:#475569;">
-                               Scanned ${data.result.comparisons_count} items without match.
-                               </div>`;
+        resultDiv.innerHTML = `<span class="badge badge-danger">Not Found</span> 
+                               <span style="color:#475569; margin-left:6px;">Checked ${data.result.comparisons_count} items.</span>`;
     }
 }
 
@@ -267,15 +191,10 @@ async function runBinarySearch() {
     const data = await res.json();
     const resultDiv = document.getElementById('binarySearchResult');
     if (data.result.found) {
-        resultDiv.innerHTML = `<div class="badge badge-success">Found: ${data.result.match.food_name}!</div> 
-                               <div style="margin-top:4px; font-size:0.8rem; color:#475569;">
-                               Binary Search took only <strong>${data.result.comparisons_count} comparisons</strong> (O(log n)).
-                               </div>`;
+        resultDiv.innerHTML = `<span class="badge badge-success">Found: ${data.result.match.food_name}!</span> 
+                               <span style="color:#475569; margin-left:6px;">Steps: <strong>${data.result.comparisons_count}</strong> (O(log n))</span>`;
     } else {
-        resultDiv.innerHTML = `<div class="badge badge-danger">Quantity ${query} Not Found</div> 
-                               <div style="margin-top:4px; font-size:0.8rem; color:#475569;">
-                               Checked in ${data.result.comparisons_count} steps.
-                               </div>`;
+        resultDiv.innerHTML = `<span class="badge badge-danger">Quantity ${query} Not Found</span>`;
     }
 }
 
@@ -287,13 +206,10 @@ async function runMergeSort() {
         body: JSON.stringify({ algorithm: 'merge', field: field, reverse: false })
     });
     const data = await res.json();
-    showToast(`Merge Sort completed on '${field}' in ${data.result.comparisons_count} comparisons!`);
+    showToast(`Merge Sort completed on '${field}'!`);
     
     document.getElementById('sortResultStats').innerHTML = `
-        <span class="badge badge-info">Merge Sort Complete</span>
-        <div style="font-size: 0.78rem; color: #475569; margin-top: 4px;">
-            Comparisons: <strong>${data.result.comparisons_count}</strong> | Time: <strong>O(n log n)</strong>
-        </div>
+        <span class="badge badge-info">Merge Sort: ${data.result.comparisons_count} comparisons</span>
     `;
 
     // Re-render table rows in sorted order
@@ -308,9 +224,9 @@ async function runMergeSort() {
             <td><strong>${item.quantity} packets</strong></td>
             <td><span class="badge badge-secondary">${item.expiry_date}</span></td>
             <td>${item.donor_name || 'Independent Donor'}</td>
-            <td>${item.location}</td>
+            <td><i class="fa-solid fa-location-dot" style="color:#94a3b8; margin-right:4px;"></i>${item.location}</td>
             <td><span class="badge badge-success">${item.status}</span></td>
-            <td><button class="btn btn-danger btn-sm" onclick="deleteFoodItem(${item.food_id})">Delete</button></td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteFoodItem(${item.food_id})"><i class="fa-solid fa-trash"></i></button></td>
         `;
         tbody.appendChild(tr);
     });
@@ -325,8 +241,8 @@ function runLinkedListTraverse() {
             setTimeout(() => {
                 node.style.borderColor = 'var(--primary)';
                 node.style.transform = 'scale(1)';
-            }, 600);
-        }, idx * 400);
+            }, 500);
+        }, idx * 300);
     });
 }
 </script>

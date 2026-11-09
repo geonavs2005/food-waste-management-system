@@ -7,6 +7,7 @@ from app import create_app
 
 def run_e2e_verification():
     app = create_app()
+    app.config['TESTING'] = True
     client = app.test_client()
     print("\n--- [1] Testing Page Renders ---")
     pages = [
@@ -14,8 +15,8 @@ def run_e2e_verification():
         ('/food', 'Food Inventory'),
         ('/donors', 'Donors Management'),
         ('/recipients', 'Recipients & Shelters Management'),
-        ('/requests', 'Request Management & FIFO Queue'),
-        ('/locations', 'Location Network & Graph Algorithms'),
+        ('/requests', 'Food Request Management'),
+        ('/locations', 'Distribution Hubs & Route Map'),
         ('/algorithms', 'Algorithm Optimizer'),
         ('/dsa-visualizer', '11-in-1 DSA Visualizer')
     ]

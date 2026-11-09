@@ -32,14 +32,22 @@ def admin_required(f):
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login_page():
+    # If user is already logged in, redirect them directly to their portal
+    if 'user_id' in session and request.method == 'GET':
+        role = session.get('role', 'admin')
+        if role == 'donor':
+            return redirect(url_for('auth_bp.donor_portal'))
+        elif role == 'receiver':
+            return redirect(url_for('auth_bp.receiver_portal'))
+        return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
         data = request.get_json(silent=True) or request.form
         username = data.get('username', '').strip()
         password = data.get('password', '').strip()
-        requested_role = data.get('role', 'admin') # 'admin', 'donor', or 'receiver'
 
         if not username or not password:
-            msg = 'Username and password are required.'
+            msg = 'Please enter both username and password.'
             if request.is_json:
                 return jsonify({'status': 'error', 'message': msg}), 400
             flash(msg, 'danger')
@@ -47,21 +55,13 @@ def login_page():
 
         user = User.get_by_username(username)
         if not user or user.get('password') != password:
-            msg = 'Invalid username or password.'
+            msg = 'Invalid username or password. Please try again.'
             if request.is_json:
                 return jsonify({'status': 'error', 'message': msg}), 401
             flash(msg, 'danger')
             return render_template('login.html')
 
-        # Role verification
-        if requested_role and user.get('role') != requested_role:
-            msg = f"Account exists, but it is registered as '{user.get('role').upper()}', not '{requested_role.upper()}'."
-            if request.is_json:
-                return jsonify({'status': 'error', 'message': msg}), 403
-            flash(msg, 'warning')
-            return render_template('login.html')
-
-        # Setup session
+        # Setup user session automatically from database record
         session['user_id'] = user['user_id']
         session['username'] = user['username']
         session['name'] = user['name']
@@ -72,12 +72,15 @@ def login_page():
         # Push to stack
         global_operations_stack.push('USER_LOGIN', f"{user['role'].upper()} '{user['name']}' logged in")
 
-        if user['role'] == 'admin':
-            redirect_url = url_for('dashboard')
-        elif user['role'] == 'donor':
+        # Determine target redirect
+        if user['role'] == 'donor':
             redirect_url = url_for('auth_bp.donor_portal')
-        else:
+        elif user['role'] == 'receiver':
             redirect_url = url_for('auth_bp.receiver_portal')
+        else:
+            redirect_url = url_for('dashboard')
+
+        flash(f"Welcome back, {user['name']}!", 'success')
 
         if request.is_json:
             return jsonify({
